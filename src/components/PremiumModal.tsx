@@ -137,94 +137,124 @@ export default function PremiumModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const t = translations[language] || translations.en;
+const handleSubscribe = async (planType: 'monthly' | 'yearly') => {
+  setLoading(true);
+  setError(null);
 
-  const handleSubscribe = async (planType: 'monthly' | 'yearly') => {
-    setLoading(true);
-    setError(null);
+  const priceIds = {
+    monthly: import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID,
+    yearly: import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID,
+  };
 
-    const priceIds = {
-      monthly: import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID,
-      yearly: import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID
+  try {
+    // 1) Bierzemy sesję (token)
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    console.log('=== FRONTEND START ===');
+    console.log('SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
+    console.log('Session error:', sessionError);
+    console.log('Session:', session);
+
+    if (!session?.access_token) {
+      throw new Error('Not authenticated');
+    }
+
+    // 2) Bierzemy usera NA ŚWIEŻO (pewniejsze niż session.user)
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+
+    console.log('User error:', userError);
+    console.log('User:', userData?.user);
+
+    const freshUserId = userData?.user?.id;
+
+    if (!freshUserId) {
+      console.error('No userId – user not logged in');
+      setError(t.genericError);
+      return;
+    }
+
+    // 3) PriceId z ENV (frontend)
+    const priceId = priceIds[planType];
+
+    if (!priceId) {
+      setError(t.invalidPrice);
+      console.error('Price ID not configured for plan:', planType);
+      return;
+    }
+
+    // 4) Wywołanie Edge Function (Supabase)
+    const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`;
+
+    const payload = {
+      userId: freshUserId,
+      priceId,
+      successUrl: `${window.location.origin}?checkout=success`,
+      cancelUrl: `${window.location.origin}?checkout=cancel`,
+      plan: planType, // jeśli backend ignoruje — nie szkodzi
     };
 
+    console.log('Starting checkout for plan:', planType);
+    console.log('Calling URL:', url);
+    console.log('BODY TO SEND:', payload);
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    console.log('Response status:', response.status);
+    console.log('Response ok:', response.ok);
+
+    const responseText = await response.text();
+    console.log('Response body (raw):', responseText);
+
+    let data: any;
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('Not authenticated');
-      }
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error('Failed to parse response as JSON:', e);
+      data = { error: 'Invalid response from server' };
+    }
 
-      const priceId = priceIds[planType];
+    console.log('Checkout response:', { status: response.status, data });
 
-      if (!priceId) {
-        setError(t.invalidPrice);
-        console.error('Price ID not configured for plan:', planType);
-        return;
-      }
-
-      console.log('Starting checkout for plan:', planType, 'with priceId:', priceId);
-
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-         'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-
-          },
-          body: JSON.stringify({
-            priceId: priceId,
-            successUrl: `${window.location.origin}?checkout=success`,
-            cancelUrl: `${window.location.origin}?checkout=cancel`,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      console.log('Checkout response:', { status: response.status, data });
-
-      if (!response.ok) {
-        if (data.details === 'STRIPE_SECRET_KEY environment variable is missing') {
-          setError(t.stripeNotConfigured);
-        } else if (data.error) {
-          setError(data.error);
-        } else {
-          setError(t.genericError);
-        }
-        console.error('Checkout error:', data);
-        return;
-      }
-
-      if (!data.url) {
+    if (!response.ok) {
+      if (data.details === 'STRIPE_SECRET_KEY environment variable is missing') {
+        setError(t.stripeNotConfigured);
+      } else if (data.error) {
+        setError(data.error);
+      } else {
         setError(t.genericError);
-        console.error('No checkout URL returned:', data);
-        return;
       }
+      console.error('Checkout error:', data);
+      return;
+    }
 
-      window.location.href = data.url;
-    } catch (error) {
-      console.error('Subscription error:', error);
+    // edge function w moim kodzie zwraca { id, url } albo { sessionId, url }
+    const checkoutUrl = data.url;
+
+    if (!checkoutUrl) {
       setError(t.genericError);
-    } finally {
-      setLoading(false);
+      console.error('No checkout URL returned:', data);
+      return;
     }
-  };
 
-  const handleUnsubscribe = async () => {
-    setLoading(true);
-    try {
-      await supabase
-        .from('subscriptions')
-        .update({ is_active: false, expires_at: new Date().toISOString() })
-        .eq('user_id', userId);
-      onClose();
-    } finally {
-      setLoading(false);
-    }
-  };
-
+    window.location.href = checkoutUrl;
+  } catch (err) {
+    console.error('Subscription error:', err);
+    setError(t.genericError);
+  } finally {
+    setLoading(false);
+  }
+};
   if (!isOpen) return null;
 
   return (
