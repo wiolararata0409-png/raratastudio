@@ -7,7 +7,7 @@ interface PremiumModalProps {
   onClose: () => void;
   isPremium: boolean;
   language: string;
-  userId: string; // prop (nie ruszamy go w handleSubscribe)
+  userId: string; // zostawiamy, bo używasz w handleUnsubscribe
 }
 
 const translations: Record<string, Record<string, string>> = {
@@ -31,6 +31,7 @@ const translations: Record<string, Record<string, string>> = {
     stripeNotConfigured: 'Stripe payment system is not configured. Please contact support.',
     invalidPrice: 'Invalid price selected. Please try again.',
     genericError: 'Failed to start checkout. Please try again later.',
+    notAuthenticated: 'You must be logged in to subscribe.'
   },
   pl: {
     premiumFeatures: 'Funkcje Premium',
@@ -52,6 +53,7 @@ const translations: Record<string, Record<string, string>> = {
     stripeNotConfigured: 'System płatności Stripe nie jest skonfigurowany. Skontaktuj się z pomocą techniczną.',
     invalidPrice: 'Wybrano nieprawidłową cenę. Spróbuj ponownie.',
     genericError: 'Nie udało się rozpocząć płatności. Spróbuj ponownie później.',
+    notAuthenticated: 'Musisz być zalogowana, aby wykupić subskrypcję.'
   },
   es: {
     premiumFeatures: 'Funciones Premium',
@@ -73,6 +75,7 @@ const translations: Record<string, Record<string, string>> = {
     stripeNotConfigured: 'El sistema de pago Stripe no está configurado. Contacte con soporte.',
     invalidPrice: 'Precio seleccionado no válido. Inténtalo de nuevo.',
     genericError: 'No se pudo iniciar el pago. Inténtalo más tarde.',
+    notAuthenticated: 'Debes iniciar sesión para suscribirte.'
   },
   fr: {
     premiumFeatures: 'Fonctionnalités Premium',
@@ -94,6 +97,7 @@ const translations: Record<string, Record<string, string>> = {
     stripeNotConfigured: "Le système de paiement Stripe n'est pas configuré. Contactez le support.",
     invalidPrice: 'Prix sélectionné invalide. Veuillez réessayer.',
     genericError: 'Impossible de démarrer le paiement. Réessayez plus tard.',
+    notAuthenticated: 'Vous devez être connecté pour vous abonner.'
   },
   de: {
     premiumFeatures: 'Premium-Funktionen',
@@ -115,7 +119,8 @@ const translations: Record<string, Record<string, string>> = {
     stripeNotConfigured: 'Das Stripe-Zahlungssystem ist nicht konfiguriert. Kontaktieren Sie den Support.',
     invalidPrice: 'Ungültiger Preis ausgewählt. Bitte versuchen Sie es erneut.',
     genericError: 'Checkout konnte nicht gestartet werden. Bitte versuchen Sie es später erneut.',
-  },
+    notAuthenticated: 'Du musst eingeloggt sein, um zu abonnieren.'
+  }
 };
 
 const features = ['feature1', 'feature2', 'feature3', 'feature4', 'feature5', 'feature6'];
@@ -125,7 +130,7 @@ export default function PremiumModal({
   onClose,
   isPremium,
   language,
-  userId: userIdFromProps,
+  userId: userIdFromProps
 }: PremiumModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -137,38 +142,39 @@ export default function PremiumModal({
 
     const priceIds = {
       monthly: import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID,
-      yearly: import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID,
+      yearly: import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID
     } as const;
 
     try {
       console.log('=== FRONTEND START ===');
       console.log('SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
 
-      // 1) Bierzemy sesję (token)
+      // 1) bierzemy sesję (token)
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       console.log('Session error:', sessionError);
-      console.log('Session:', session ? 'Present' : 'Missing');
-      console.log('Token length:', session?.access_token?.length || 0);
+      console.log('Session present:', !!session);
+      console.log('Access token length:', session?.access_token?.length || 0);
 
       if (!session?.access_token) {
-        throw new Error('Not authenticated');
+        setError(t.notAuthenticated);
+        console.error('Not authenticated (no access_token).');
+        return;
       }
 
-      // 2) Bierzemy usera na podstawie tokena (pewniejsze niż session.user w niektórych przypadkach)
-      const { data: userData, error: userError } = await supabase.auth.getUser(session.access_token);
+      // 2) bierzemy usera "na pewniaka" (Supabase zweryfikuje token)
+      const { data: userData, error: userError } = await supabase.auth.getUser();
       console.log('User error:', userError);
       console.log('User:', userData?.user);
 
       const freshUserId = userData?.user?.id;
-      console.log('Fresh userId:', freshUserId || 'No user');
 
       if (!freshUserId) {
-        setError(t.genericError);
+        setError(t.notAuthenticated);
         console.error('No userId – user not logged in');
         return;
       }
 
-      // 3) PriceId z ENV
+      // 3) priceId z env
       const priceId = priceIds[planType];
       if (!priceId) {
         setError(t.invalidPrice);
@@ -176,7 +182,7 @@ export default function PremiumModal({
         return;
       }
 
-      // 4) Wywołanie Edge Function
+      // 4) call Edge Function
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`;
 
       const payload = {
@@ -184,7 +190,7 @@ export default function PremiumModal({
         priceId,
         successUrl: `${window.location.origin}?checkout=success`,
         cancelUrl: `${window.location.origin}?checkout=cancel`,
-        plan: planType, // backend może ignorować — nie szkodzi
+        plan: planType // nie szkodzi jeśli backend ignoruje
       };
 
       console.log('Starting checkout for plan:', planType);
@@ -196,26 +202,21 @@ export default function PremiumModal({
         headers: {
           Authorization: `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
-          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
       console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-
       const responseText = await response.text();
       console.log('Response body (raw):', responseText);
 
-      let data: any;
+      let data: any = {};
       try {
         data = JSON.parse(responseText);
-      } catch (e) {
-        console.error('Failed to parse response as JSON:', e);
+      } catch {
         data = { error: 'Invalid response from server' };
       }
-
-      console.log('Checkout response:', { status: response.status, data });
 
       if (!response.ok) {
         if (data.details === 'STRIPE_SECRET_KEY environment variable is missing') {
@@ -236,8 +237,8 @@ export default function PremiumModal({
       }
 
       window.location.href = data.url;
-    } catch (err) {
-      console.error('Subscription error:', err);
+    } catch (e) {
+      console.error('Subscription error:', e);
       setError(t.genericError);
     } finally {
       setLoading(false);
@@ -251,7 +252,6 @@ export default function PremiumModal({
         .from('subscriptions')
         .update({ is_active: false, expires_at: new Date().toISOString() })
         .eq('user_id', userIdFromProps);
-
       onClose();
     } finally {
       setLoading(false);
@@ -323,7 +323,7 @@ export default function PremiumModal({
           <div>
             <h4 className="font-bold text-slate-800 mb-3">Included Features:</h4>
             <div className="space-y-2">
-              {features.map((feature) => (
+              {features.map(feature => (
                 <div key={feature} className="flex items-center gap-3">
                   <Check className="text-green-600 flex-shrink-0" size={20} />
                   <p className="text-slate-700">{t[feature]}</p>
