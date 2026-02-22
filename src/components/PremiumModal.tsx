@@ -136,112 +136,110 @@ export default function PremiumModal({
   const [error, setError] = useState<string | null>(null);
   const t = translations[language] || translations.en;
 
-  const handleSubscribe = async (planType: 'monthly' | 'yearly') => {
-    setLoading(true);
-    setError(null);
+const handleSubscribe = async (planType: 'monthly' | 'yearly') => {
+  setLoading(true);
+  setError(null);
 
-    const priceIds = {
-      monthly: import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID,
-      yearly: import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID
-    } as const;
-
-    try {
-      console.log('=== FRONTEND START ===');
-      console.log('SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
-
-      // 1) bierzemy sesję (token)
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      console.log('Session error:', sessionError);
-      console.log('Session present:', !!session);
-      console.log('Access token length:', session?.access_token?.length || 0);
-
-      if (!session?.access_token) {
-        setError(t.notAuthenticated);
-        console.error('Not authenticated (no access_token).');
-        return;
-      }
-
-      // 2) bierzemy usera "na pewniaka" (Supabase zweryfikuje token)
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      console.log('User error:', userError);
-      console.log('User:', userData?.user);
-
-      const freshUserId = userData?.user?.id;
-
-      if (!freshUserId) {
-        setError(t.notAuthenticated);
-        console.error('No userId – user not logged in');
-        return;
-      }
-
-      // 3) priceId z env
-      const priceId = priceIds[planType];
-      if (!priceId) {
-        setError(t.invalidPrice);
-        console.error('Price ID not configured for plan:', planType);
-        return;
-      }
-
-      // 4) call Edge Function
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`;
-
-     const payload = {
-  userId: userIdFromProps,
-  priceId,
-  successUrl: `${window.location.origin}?checkout=success`,
-  cancelUrl: `${window.location.origin}?checkout=cancel`,
-};
-      console.log('Starting checkout for plan:', planType);
-      console.log('Calling URL:', url);
-      console.log('BODY TO SEND:', payload);
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY
-        },
-        body: JSON.stringify(payload)
-      });
-
-      console.log('Response status:', response.status);
-      const responseText = await response.text();
-      console.log('Response body (raw):', responseText);
-
-      let data: any = {};
-      try {
-        data = JSON.parse(responseText);
-      } catch {
-        data = { error: 'Invalid response from server' };
-      }
-
-      if (!response.ok) {
-        if (data.details === 'STRIPE_SECRET_KEY environment variable is missing') {
-          setError(t.stripeNotConfigured);
-        } else if (data.error) {
-          setError(data.error);
-        } else {
-          setError(t.genericError);
-        }
-        console.error('Checkout error:', data);
-        return;
-      }
-
-      if (!data.url) {
-        setError(t.genericError);
-        console.error('No checkout URL returned:', data);
-        return;
-      }
-
-      window.location.href = data.url;
-    } catch (e) {
-      console.error('Subscription error:', e);
-      setError(t.genericError);
-    } finally {
-      setLoading(false);
-    }
+  const priceIds = {
+    monthly: import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID,
+    yearly: import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID,
   };
+
+  try {
+    // 1) Sesja (token do Authorization)
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    const session = sessionData?.session;
+
+    console.log('=== FRONTEND START ===');
+    console.log('SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
+    console.log('Session error:', sessionError);
+    console.log('Session present:', !!session);
+    console.log('Token length:', session?.access_token?.length || 0);
+
+    if (!session?.access_token) {
+      setError('Not authenticated');
+      console.error('No session/access_token');
+      return;
+    }
+
+    // 2) PEWNY userId (z getUser)
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    console.log('User error:', userError);
+    console.log('User:', userData?.user);
+
+    const freshUserId = userData?.user?.id;
+
+    if (!freshUserId) {
+      setError('Missing userId');
+      console.error('No userId from getUser()');
+      return;
+    }
+
+    // 3) PriceId z ENV
+    const priceId = priceIds[planType];
+    if (!priceId) {
+      setError(t.invalidPrice);
+      console.error('Price ID not configured for plan:', planType);
+      return;
+    }
+
+    // 4) URL Edge Function
+    const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`;
+
+    // 5) Payload
+    const payload = {
+      userId: freshUserId,
+      priceId,
+      successUrl: `${window.location.origin}?checkout=success`,
+      cancelUrl: `${window.location.origin}?checkout=cancel`,
+    };
+
+    console.log('Starting checkout for plan:', planType);
+    console.log('Calling URL:', url);
+    console.log('BODY TO SEND:', payload);
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const responseText = await response.text();
+    console.log('Response status:', response.status);
+    console.log('Response ok:', response.ok);
+    console.log('Response body (raw):', responseText);
+
+    let data: any = {};
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      data = { error: responseText || 'Invalid response from server' };
+    }
+
+    if (!response.ok) {
+      setError(data?.error || t.genericError);
+      console.error('Checkout error:', data);
+      return;
+    }
+
+    if (!data?.url) {
+      setError(t.genericError);
+      console.error('No checkout URL returned:', data);
+      return;
+    }
+
+    window.location.href = data.url;
+  } catch (err) {
+    console.error('Subscription error:', err);
+    setError(t.genericError);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleUnsubscribe = async () => {
     setLoading(true);
