@@ -185,14 +185,12 @@ export default function PremiumModal({
       // 4) call Edge Function
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`;
 
-      const payload = {
-        userId: freshUserId,
-        priceId,
-        successUrl: `${window.location.origin}?checkout=success`,
-        cancelUrl: `${window.location.origin}?checkout=cancel`,
-        plan: planType // nie szkodzi jeśli backend ignoruje
-      };
-
+     const payload = {
+  userId: userIdFromProps,
+  priceId,
+  successUrl: `${window.location.origin}?checkout=success`,
+  cancelUrl: `${window.location.origin}?checkout=cancel`,
+};
       console.log('Starting checkout for plan:', planType);
       console.log('Calling URL:', url);
       console.log('BODY TO SEND:', payload);
