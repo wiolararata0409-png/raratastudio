@@ -160,26 +160,25 @@ const handleSubscribe = async (planType: 'monthly' | 'yearly') => {
       return;
     }
 
-    // 2) Pobierz usera NA ŚWIEŻO (pewniejsze niż propsy)
-    const { data: userData, error: userError } = await supabase.auth.getUser(session.access_token);
+// 2) Pobierz usera poprawnie (bez tokena)
+const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-    console.log('User error:', userError);
-    console.log('User:', userData?.user);
+console.log("User error:", userError);
+console.log("User:", user);
 
-    const freshUserId =
-      userData?.user?.id ||
-      session?.user?.id ||
-      userIdFromProps ||
-      null;
+const fallbackUserId =
+  user?.id ||
+  session?.user?.id ||
+  userIdFromProps ||
+  null;
 
-    console.log('freshUserId:', freshUserId);
+console.log("fallbackUserId:", fallbackUserId);
 
-    if (!freshUserId) {
-      setError('Missing userId');
-      console.error('No userId – user not logged in');
-      return;
-    }
-
+if (!fallbackUserId) {
+  console.error("NO USER ID");
+  alert("User not logged in");
+  return;
+}
     // 3) PriceId
     const priceId = priceIds[planType];
     if (!priceId) {
@@ -192,7 +191,7 @@ const handleSubscribe = async (planType: 'monthly' | 'yearly') => {
     const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`;
 
     const payload = {
-      userId: freshUserId,
+     userId: fallbackUserId, 
       priceId,
       successUrl: `${window.location.origin}?checkout=success`,
       cancelUrl: `${window.location.origin}?checkout=cancel`,
