@@ -1,317 +1,272 @@
-import { useState } from 'react';
-import { X, Check, Crown, AlertCircle } from 'lucide-react';
-import { supabase } from '../lib/supabaseClient';
+import React, { useEffect, useMemo, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
+
+// Jeśli masz lucide-react w projekcie – OK. Jak nie, usuń import i ikonki.
+import { Check, Crown, AlertCircle } from "lucide-react";
+
+type PlanType = "monthly" | "yearly";
 
 interface PremiumModalProps {
   isOpen: boolean;
   onClose: () => void;
   isPremium: boolean;
   language: string;
-  userId: string;
+  userId?: string; // opcjonalnie, ale i tak pobieramy świeżo z Supabase
 }
 
-const translations: Record<string, Record<string, string>> = {
+const translations: Record<string, any> = {
   en: {
-    premiumFeatures: 'Premium Features',
-    monthlyPlan: 'Monthly - £2.99',
-    yearlyPlan: 'Yearly - £26.99',
-    subscribe: 'Subscribe',
-    unsubscribe: 'Cancel Subscription',
-    feature1: 'Advanced spending analytics',
-    feature2: 'Budget forecasting',
-    feature3: 'Export reports to PDF',
-    feature4: 'Custom categories',
-    feature5: 'Recurring expenses',
-    feature6: 'Multi-currency support',
-    saveUpTo: 'Save up to 43% with yearly plan',
-    bestValue: 'Best Value',
-    active: 'Active until',
-    alreadyPremium: 'You are already a premium member',
-    errorTitle: 'Payment Error',
-    stripeNotConfigured: 'Stripe payment system is not configured. Please contact support.',
-    invalidPrice: 'Invalid price selected. Please try again.',
-    genericError: 'Failed to start checkout. Please try again later.'
+    title: "Premium Features",
+    subscribe: "Subscribe",
+    processing: "Processing...",
+    bestValue: "Best Value",
+    saveUpTo: "Save up to 43% with yearly plan",
+    paymentError: "Payment Error",
+    missingUser: "You must be logged in to subscribe.",
+    genericError: "Checkout could not be started. Please try again.",
+    invalidPrice: "Invalid price selected. Please try again.",
+    included: "Included Features",
+    unsubscribe: "Unsubscribe",
   },
   pl: {
-    premiumFeatures: 'Funkcje Premium',
-    monthlyPlan: 'Miesięczny - £2.99',
-    yearlyPlan: 'Roczny - £26.99',
-    subscribe: 'Subskrybuj',
-    unsubscribe: 'Anuluj subskrypcję',
-    feature1: 'Zaawansowana analiza wydatków',
-    feature2: 'Prognozowanie budżetu',
-    feature3: 'Export raportów do PDF',
-    feature4: 'Niestandardowe kategorie',
-    feature5: 'Powtarzające się wydatki',
-    feature6: 'Obsługa wielu walut',
-    saveUpTo: 'Zaoszczędź do 43% z planem rocznym',
-    bestValue: 'Najlepsza oferta',
-    active: 'Aktywny do',
-    alreadyPremium: 'Jesteś już członkiem premium',
-    errorTitle: 'Błąd płatności',
-    stripeNotConfigured: 'System płatności Stripe nie jest skonfigurowany. Skontaktuj się z pomocą techniczną.',
-    invalidPrice: 'Wybrano nieprawidłową cenę. Spróbuj ponownie.',
-    genericError: 'Nie udało się rozpocząć płatności. Spróbuj ponownie później.'
+    title: "Funkcje Premium",
+    subscribe: "Subskrybuj",
+    processing: "Przetwarzanie...",
+    bestValue: "Najlepsza opcja",
+    saveUpTo: "Oszczędź do 43% z planem rocznym",
+    paymentError: "Błąd płatności",
+    missingUser: "Musisz być zalogowana/y, aby wykupić subskrypcję.",
+    genericError: "Nie udało się uruchomić płatności. Spróbuj ponownie.",
+    invalidPrice: "Nieprawidłowa cena. Spróbuj ponownie.",
+    included: "W pakiecie",
+    unsubscribe: "Anuluj subskrypcję",
   },
-  es: {
-    premiumFeatures: 'Funciones Premium',
-    monthlyPlan: 'Mensual - £2.99',
-    yearlyPlan: 'Anual - £26.99',
-    subscribe: 'Suscribirse',
-    unsubscribe: 'Cancelar suscripción',
-    feature1: 'Análisis avanzado de gastos',
-    feature2: 'Pronóstico de presupuesto',
-    feature3: 'Exportar informes en PDF',
-    feature4: 'Categorías personalizadas',
-    feature5: 'Gastos recurrentes',
-    feature6: 'Soporte multimoneda',
-    saveUpTo: 'Ahorra hasta 43% con plan anual',
-    bestValue: 'Mejor valor',
-    active: 'Activo hasta',
-    alreadyPremium: 'Ya eres miembro premium',
-    errorTitle: 'Error de pago',
-    stripeNotConfigured: 'El sistema de pago Stripe no está configurado. Contacte con soporte.',
-    invalidPrice: 'Precio seleccionado no válido. Inténtalo de nuevo.',
-    genericError: 'No se pudo iniciar el pago. Inténtalo más tarde.'
-  },
-  fr: {
-    premiumFeatures: 'Fonctionnalités Premium',
-    monthlyPlan: 'Mensuel - £2.99',
-    yearlyPlan: 'Annuel - £26.99',
-    subscribe: 'S\'abonner',
-    unsubscribe: 'Annuler l\'abonnement',
-    feature1: 'Analyse avancée des dépenses',
-    feature2: 'Prévision budgétaire',
-    feature3: 'Exporter rapports en PDF',
-    feature4: 'Catégories personnalisées',
-    feature5: 'Dépenses récurrentes',
-    feature6: 'Support multidevises',
-    saveUpTo: 'Économisez jusqu\'à 43% avec le plan annuel',
-    bestValue: 'Meilleure valeur',
-    active: 'Actif jusqu\'au',
-    alreadyPremium: 'Vous êtes déjà un membre premium',
-    errorTitle: 'Erreur de paiement',
-    stripeNotConfigured: 'Le système de paiement Stripe n\'est pas configuré. Contactez le support.',
-    invalidPrice: 'Prix sélectionné invalide. Veuillez réessayer.',
-    genericError: 'Impossible de démarrer le paiement. Réessayez plus tard.'
-  },
-  de: {
-    premiumFeatures: 'Premium-Funktionen',
-    monthlyPlan: 'Monatlich - £2.99',
-    yearlyPlan: 'Jährlich - £26.99',
-    subscribe: 'Abonnieren',
-    unsubscribe: 'Abonnement kündigen',
-    feature1: 'Erweiterte Ausgabenanalyse',
-    feature2: 'Budgetprognose',
-    feature3: 'Berichte als PDF exportieren',
-    feature4: 'Benutzerdefinierte Kategorien',
-    feature5: 'Wiederkehrende Ausgaben',
-    feature6: 'Multi-Währungsunterstützung',
-    saveUpTo: 'Sparen Sie bis zu 43% mit Jahresplan',
-    bestValue: 'Bestes Angebot',
-    active: 'Aktiv bis',
-    alreadyPremium: 'Sie sind bereits Premium-Mitglied',
-    errorTitle: 'Zahlungsfehler',
-    stripeNotConfigured: 'Das Stripe-Zahlungssystem ist nicht konfiguriert. Kontaktieren Sie den Support.',
-    invalidPrice: 'Ungültiger Preis ausgewählt. Bitte versuchen Sie es erneut.',
-    genericError: 'Checkout konnte nicht gestartet werden. Bitte versuchen Sie es später erneut.'
-  }
 };
 
-const features = [
-  'feature1',
-  'feature2',
-  'feature3',
-  'feature4',
-  'feature5',
-  'feature6'
-];
+const features = ["feature1", "feature2", "feature3", "feature4"];
 
 export default function PremiumModal({
   isOpen,
   onClose,
   isPremium,
   language,
-  userId
+  userId: userIdFromProps,
 }: PremiumModalProps) {
+  const t = useMemo(() => translations[language] || translations.en, [language]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const t = translations[language] || translations.en;
 
-  const handleSubscribe = async (planType: 'monthly' | 'yearly') => {
-    setLoading(true);
-    setError(null);
+  // Upewnij się, że modal resetuje błąd po otwarciu
+  useEffect(() => {
+    if (isOpen) setError(null);
+  }, [isOpen]);
 
-    const priceIds = {
-      monthly: import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID,
-      yearly: import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID
-    };
+  // Stripe priceId z ENV (Vite)
+  const priceIds = useMemo(
+    () => ({
+      monthly: import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID as string | undefined,
+      yearly: import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID as string | undefined,
+    }),
+    []
+  );
 
+  const handleSubscribe = async (planType: PlanType) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('Not authenticated');
-      }
+      setLoading(true);
+      setError(null);
 
-      const priceId = priceIds[planType];
+      const priceId = planType === "yearly" ? priceIds.yearly : priceIds.monthly;
 
       if (!priceId) {
+        console.error("Price ID not configured for plan:", planType);
         setError(t.invalidPrice);
-        console.error('Price ID not configured for plan:', planType);
+        setLoading(false);
         return;
       }
 
-      console.log('Starting checkout for plan:', planType, 'with priceId:', priceId);
+      // 1) Pobierz sesję
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) console.error("getSession error:", sessionError);
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-         'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+      const session = sessionData?.session || null;
 
-          },
-          body: JSON.stringify({
-            priceId: priceId,
-            successUrl: `${window.location.origin}?checkout=success`,
-            cancelUrl: `${window.location.origin}?checkout=cancel`,
-          }),
-        }
-      );
+      // 2) Pobierz usera NA ŚWIEŻO (pewniejsze niż propsy)
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) console.error("getUser error:", userError);
 
-      const data = await response.json();
+      const freshUserId =
+        userData?.user?.id ||
+        session?.user?.id ||
+        userIdFromProps ||
+        null;
 
-      console.log('Checkout response:', { status: response.status, data });
+      console.log("SESSION:", session);
+      console.log("USER FROM getUser:", userData?.user);
+      console.log("freshUserId:", freshUserId);
+
+      if (!freshUserId) {
+        setError(t.missingUser);
+        setLoading(false);
+        return;
+      }
+
+      // 3) Edge Function URL
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`;
+
+      const payload = {
+        userId: freshUserId, // ✅ KLUCZOWE: to rozwiązuje "Missing userId"
+        plan: planType,
+        priceId,
+        successUrl: `${window.location.origin}?checkout=success`,
+        cancelUrl: `${window.location.origin}?checkout=cancel`,
+      };
+
+      console.log("Starting checkout for plan:", planType, "with priceId:", priceId);
+      console.log("Calling URL:", url);
+      console.log("PAYLOAD:", payload);
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session?.access_token || ""}`,
+          "Content-Type": "application/json",
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY as string,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch (e) {
+        // jeśli backend nie zwróci JSON
+        data = null;
+      }
+
+      console.log("Checkout response:", { status: response.status, data });
 
       if (!response.ok) {
-        if (data.details === 'STRIPE_SECRET_KEY environment variable is missing') {
-          setError(t.stripeNotConfigured);
-        } else if (data.error) {
-          setError(data.error);
-        } else {
-          setError(t.genericError);
-        }
-        console.error('Checkout error:', data);
+        const backendMessage =
+          data?.error || data?.message || data?.details || t.genericError;
+
+        // Najczęstsze: Missing userId / Missing STRIPE_SECRET_KEY itd.
+        setError(typeof backendMessage === "string" ? backendMessage : t.genericError);
+        setLoading(false);
         return;
       }
 
-      if (!data.url) {
+      // Zakładamy, że edge function zwraca np. { url: "https://checkout.stripe.com/..." }
+      const checkoutUrl = data?.url;
+      if (!checkoutUrl) {
         setError(t.genericError);
-        console.error('No checkout URL returned:', data);
+        setLoading(false);
         return;
       }
 
-      window.location.href = data.url;
-    } catch (error) {
-      console.error('Subscription error:', error);
+      window.location.href = checkoutUrl;
+    } catch (err: any) {
+      console.error("Checkout error:", err);
       setError(t.genericError);
-    } finally {
       setLoading(false);
     }
   };
 
+  // Jeśli masz endpoint do anulowania subskrypcji, tu podepniesz
   const handleUnsubscribe = async () => {
-    setLoading(true);
-    try {
-      await supabase
-        .from('subscriptions')
-        .update({ is_active: false, expires_at: new Date().toISOString() })
-        .eq('user_id', userId);
-      onClose();
-    } finally {
-      setLoading(false);
-    }
+    alert("Unsubscribe handler not implemented yet.");
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-screen overflow-y-auto">
-        <div className="sticky top-0 bg-white flex items-center justify-between p-6 border-b">
-          <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <Crown className="text-yellow-500" size={28} />
-            {t.premiumFeatures}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-slate-100 rounded-lg transition"
-          >
-            <X size={24} className="text-slate-600" />
-          </button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl relative">
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 text-slate-500 hover:text-slate-800"
+          aria-label="Close"
+        >
+          ✕
+        </button>
+
+        <div className="flex items-center gap-2 mb-4">
+          <Crown className="h-5 w-5 text-yellow-500" />
+          <h2 className="text-xl font-bold text-slate-900">{t.title}</h2>
         </div>
 
-        <div className="p-6 space-y-6">
-          {isPremium && (
-            <div className="bg-green-50 border-2 border-green-300 rounded-xl p-4">
-              <p className="text-green-700 font-semibold">{t.alreadyPremium}</p>
-            </div>
-          )}
-
-          {error && (
-            <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
-                <div>
-                  <p className="text-red-800 font-semibold">{t.errorTitle}</p>
-                  <p className="text-red-700 text-sm mt-1">{error}</p>
-                </div>
+        {error && (
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-red-700">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="h-5 w-5 mt-0.5" />
+              <div>
+                <div className="font-semibold">{t.paymentError}</div>
+                <div className="text-sm">{error}</div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="border-2 border-slate-200 rounded-2xl p-6">
-              <h3 className="text-xl font-bold text-slate-800 mb-4">{t.monthlyPlan}</h3>
-              <button
-                onClick={() => handleSubscribe('monthly')}
-                disabled={loading}
-                className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:shadow-lg transition disabled:opacity-50 mb-6"
-              >
-                {loading ? 'Processing...' : t.subscribe}
-              </button>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {/* MONTHLY */}
+          <div className="border-2 border-slate-200 rounded-2xl p-6">
+            <h3 className="text-lg font-bold text-slate-800 mb-1">
+              Monthly - £2.99
+            </h3>
+
+            <button
+              onClick={() => handleSubscribe("monthly")}
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:shadow-lg transition disabled:opacity-50"
+            >
+              {loading ? t.processing : t.subscribe}
+            </button>
+          </div>
+
+          {/* YEARLY */}
+          <div className="border-2 border-yellow-400 rounded-2xl p-6 bg-yellow-50 relative">
+            <div className="absolute -top-3 right-6 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">
+              {t.bestValue}
             </div>
 
-            <div className="border-2 border-yellow-400 rounded-2xl p-6 bg-yellow-50 relative">
-              <div className="absolute -top-3 right-6 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">
-                {t.bestValue}
+            <h3 className="text-lg font-bold text-slate-800 mb-1">
+              Yearly - £26.99
+            </h3>
+            <p className="text-sm text-slate-600 mb-3">{t.saveUpTo}</p>
+
+            <button
+              onClick={() => handleSubscribe("yearly")}
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-3 rounded-xl font-bold hover:shadow-lg transition disabled:opacity-50"
+            >
+              {loading ? t.processing : t.subscribe}
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <div className="font-semibold text-slate-800 mb-2">{t.included}</div>
+          <div className="space-y-2">
+            {features.map((feature) => (
+              <div key={feature} className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-600" />
+                <p className="text-slate-700">{feature}</p>
               </div>
-              <h3 className="text-xl font-bold text-slate-800 mb-1">{t.yearlyPlan}</h3>
-              <p className="text-sm text-slate-600 mb-4">{t.saveUpTo}</p>
-              <button
-                onClick={() => handleSubscribe('yearly')}
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-3 rounded-xl font-bold hover:shadow-lg transition disabled:opacity-50"
-              >
-                {loading ? 'Processing...' : t.subscribe}
-              </button>
-            </div>
+            ))}
           </div>
+        </div>
 
-          <div>
-            <h4 className="font-bold text-slate-800 mb-3">Included Features:</h4>
-            <div className="space-y-2">
-              {features.map(feature => (
-                <div key={feature} className="flex items-center gap-3">
-                  <Check className="text-green-600 flex-shrink-0" size={20} />
-                  <p className="text-slate-700">{t[feature]}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {isPremium && (
+        {isPremium && (
+          <div className="mt-6">
             <button
               onClick={handleUnsubscribe}
               disabled={loading}
-              className="w-full py-3 border-2 border-red-300 text-red-600 rounded-xl font-bold hover:bg-red-50 transition disabled:opacity-50"
+              className="w-full py-3 rounded-xl border-2 border-red-300 text-red-700 font-bold disabled:opacity-50"
             >
               {t.unsubscribe}
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
