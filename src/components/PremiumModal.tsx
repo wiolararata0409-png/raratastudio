@@ -146,36 +146,41 @@ const handleSubscribe = async (planType: 'monthly' | 'yearly') => {
   };
 
   try {
-    // 1) Sesja (token do Authorization)
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-    const session = sessionData?.session;
+    // 1) Pobierz sesję (token)
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
 
-    console.log('=== FRONTEND START ===');
-    console.log('SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
     console.log('Session error:', sessionError);
-    console.log('Session present:', !!session);
-    console.log('Token length:', session?.access_token?.length || 0);
+    console.log('Session:', session);
 
     if (!session?.access_token) {
-      setError('Not authenticated');
-      console.error('No session/access_token');
+      setError(t.notAuthenticated || 'Not authenticated');
       return;
     }
 
-    // 2) PEWNY userId (z getUser)
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    // 2) Pobierz usera NA ŚWIEŻO (pewniejsze niż propsy)
+    const { data: userData, error: userError } = await supabase.auth.getUser(session.access_token);
+
     console.log('User error:', userError);
     console.log('User:', userData?.user);
 
-    const freshUserId = userData?.user?.id;
+    const freshUserId =
+      userData?.user?.id ||
+      session?.user?.id ||
+      userIdFromProps ||
+      null;
+
+    console.log('freshUserId:', freshUserId);
 
     if (!freshUserId) {
       setError('Missing userId');
-      console.error('No userId from getUser()');
+      console.error('No userId – user not logged in');
       return;
     }
 
-    // 3) PriceId z ENV
+    // 3) PriceId
     const priceId = priceIds[planType];
     if (!priceId) {
       setError(t.invalidPrice);
@@ -183,20 +188,20 @@ const handleSubscribe = async (planType: 'monthly' | 'yearly') => {
       return;
     }
 
-    // 4) URL Edge Function
+    // 4) Edge Function URL
     const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`;
 
-    // 5) Payload
     const payload = {
       userId: freshUserId,
       priceId,
       successUrl: `${window.location.origin}?checkout=success`,
       cancelUrl: `${window.location.origin}?checkout=cancel`,
+      plan: planType, // może być, backend może ignorować
     };
 
     console.log('Starting checkout for plan:', planType);
     console.log('Calling URL:', url);
-    console.log('BODY TO SEND:', payload);
+    console.log('PAYLOAD:', payload);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -210,14 +215,13 @@ const handleSubscribe = async (planType: 'monthly' | 'yearly') => {
 
     const responseText = await response.text();
     console.log('Response status:', response.status);
-    console.log('Response ok:', response.ok);
     console.log('Response body (raw):', responseText);
 
     let data: any = {};
     try {
       data = JSON.parse(responseText);
     } catch {
-      data = { error: responseText || 'Invalid response from server' };
+      data = { error: 'Invalid response from server' };
     }
 
     if (!response.ok) {
@@ -233,26 +237,13 @@ const handleSubscribe = async (planType: 'monthly' | 'yearly') => {
     }
 
     window.location.href = data.url;
-  } catch (err) {
-    console.error('Subscription error:', err);
+  } catch (e) {
+    console.error('Subscription error:', e);
     setError(t.genericError);
   } finally {
     setLoading(false);
   }
 };
-
-  const handleUnsubscribe = async () => {
-    setLoading(true);
-    try {
-      await supabase
-        .from('subscriptions')
-        .update({ is_active: false, expires_at: new Date().toISOString() })
-        .eq('user_id', userIdFromProps);
-      onClose();
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (!isOpen) return null;
 
