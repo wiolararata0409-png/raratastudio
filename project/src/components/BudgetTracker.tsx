@@ -21,7 +21,7 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
   const [showSettings, setShowSettings] = useState(false);
   const [newBudget, setNewBudget] = useState(30);
   const [loading, setLoading] = useState(true);
-
+const [isPremium, setIsPremium] = useState(false);
   const t = translations[language] || translations.en;
 
  useEffect(() => {
@@ -41,7 +41,15 @@ const handleCreateBudget = async (uid: string, defaultLimit = 30) => {
 
   return true;
 };
+const checkSubscription = async () => {
+  const { data } = await supabase
+    .from('user_subscriptions')
+    .select('is_active')
+    .eq('user_id', userId)
+    .maybeSingle();
 
+  setIsPremium(data?.is_active ?? false);
+};
 const loadBudgetData = async () => {
   try {
     const { data: budgetData } = await supabase
