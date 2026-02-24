@@ -27,7 +27,18 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
   useEffect(() => {
     loadBudgetData();
   }, [userId]);
+const handleCreateBudget = async (uid: string, defaultLimit = 30) => {
+  const { error } = await supabase
+    .from("user_budgets")
+    .insert([{ user_id: uid, daily_limit: defaultLimit }]);
 
+  if (error) {
+    console.error("Create budget error:", error);
+    return false;
+  }
+
+  return true;
+};
   const loadBudgetData = async () => {
     try {
       const { data: budgetData } = await supabase
