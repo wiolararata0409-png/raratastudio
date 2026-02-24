@@ -206,6 +206,7 @@ export default function PremiumModal({
             </div>
           </div>
         )}
+        {!isPremium && (
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {/* MONTHLY */}
@@ -243,6 +244,7 @@ export default function PremiumModal({
             </button>
           </div>
         </div>
+      )}
 
         <div className="mt-6">
           <div className="font-semibold text-slate-800 mb-2">{t.included}</div>
