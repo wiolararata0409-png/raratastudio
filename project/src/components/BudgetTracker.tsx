@@ -54,7 +54,83 @@ const loadBudgetData = async () => {
       setNewBudget(budgetData.daily_limit);
     } else {
       // ✅ jeśli nie ma rekordu — tworzymy domyślny
+     // ✅ helper: tworzy budget, jeśli go nie ma
+const handleCreateBudget = async (uid: string, defaultLimit = 30) => {
+  const { error } = await supabase
+    .from("user_budgets")
+    .insert([{ user_id: uid, daily_limit: defaultLimit }]);
+
+  if (error) {
+    console.error("Create budget error:", error);
+    return false;
+  }
+
+  return true;
+};
+
+const loadBudgetData = async () => {
+  try {
+    const { data: budgetData } = await supabase
+      .from("user_budgets")
+      .select("daily_limit")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (budgetData) {
+      setBudgetLimit(budgetData.daily_limit);
+      setNewBudget(budgetData.daily_limit);
+    } else {
+      // ✅ jeśli nie ma rekordu — tworzymy domyślny
+    // ✅ helper: tworzy budget, jeśli go nie ma
+const handleCreateBudget = async (uid: string, defaultLimit = 30) => {
+  const { error } = await supabase
+    .from("user_budgets")
+    .insert([{ user_id: uid, daily_limit: defaultLimit }]);
+
+  if (error) {
+    console.error("Create budget error:", error);
+    return false;
+  }
+
+  return true;
+};
+
+const loadBudgetData = async () => {
+  try {
+    const { data: budgetData } = await supabase
+      .from("user_budgets")
+      .select("daily_limit")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (budgetData) {
+      setBudgetLimit(budgetData.daily_limit);
+      setNewBudget(budgetData.daily_limit);
+    } else {
+      // ✅ jeśli nie ma rekordu — tworzymy domyślny
       const ok = await handleCreateBudget(userId, 30);
+      if (ok) {
+        setBudgetLimit(30);
+        setNewBudget(30);
+      }
+    }
+
+    loadTodayExpenses();
+  } finally {
+    setLoading(false);
+  }
+};
+      if (ok) {
+        setBudgetLimit(30);
+        setNewBudget(30);
+      }
+    }
+
+    loadTodayExpenses();
+  } finally {
+    setLoading(false);
+  }
+};
       if (ok) {
         setBudgetLimit(30);
         setNewBudget(30);
