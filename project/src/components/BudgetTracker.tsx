@@ -24,9 +24,10 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
 
   const t = translations[language] || translations.en;
 
-  useEffect(() => {
-    loadBudgetData();
-  }, [userId]);
+ useEffect(() => {
+  loadBudgetData();
+  checkSubscription();
+}, [userId]);
 // ✅ helper: tworzy budget, jeśli go nie ma
 const handleCreateBudget = async (uid: string, defaultLimit = 30) => {
   const { error } = await supabase
