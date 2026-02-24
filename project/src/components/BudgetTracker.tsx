@@ -273,6 +273,22 @@ const loadBudgetData = async () => {
           </div>
         </div>
       )}
+      {/* STATS SECTION */}
+<div className="mt-6">
+  <h3 className="text-lg font-semibold mb-2">Statistics</h3>
+
+  {isPremium ? (
+    <div className="p-4 rounded-xl bg-white shadow">
+      <p>Total spent today: £{spent}</p>
+      <p>Remaining: £{Math.max(0, budget - spent)}</p>
+    </div>
+  ) : (
+    <div className="p-4 rounded-xl border border-dashed text-center">
+      <p className="font-semibold">Premium feature</p>
+      <p className="text-sm opacity-70">Unlock statistics with Premium</p>
+    </div>
+  )}
+</div>
     </div>
   );
 }
