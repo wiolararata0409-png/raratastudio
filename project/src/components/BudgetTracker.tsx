@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { AlertCircle, Settings } from 'lucide-react';
-import { supabase } from '../lib/supabaseClient';
+import { useEffect, useState } from "react";
+import { AlertCircle, Settings } from "lucide-react";
+import { supabase } from "../lib/supabaseClient";
 
 interface BudgetTrackerProps {
   userId: string;
@@ -8,11 +8,46 @@ interface BudgetTrackerProps {
 }
 
 const translations: Record<string, Record<string, string>> = {
-  en: { dailyBudget: 'Daily Budget', spent: 'Spent', remaining: 'Remaining', warning: 'Budget Limit Alert!', youveExceeded: 'You have exceeded your daily budget', setBudget: 'Set Budget Limit' },
-  pl: { dailyBudget: 'Dzienny Budżet', spent: 'Wydano', remaining: 'Pozostało', warning: 'Alert!', youveExceeded: 'Przekroczyłeś budżet', setBudget: 'Ustaw limit' },
-  es: { dailyBudget: 'Presupuesto Diario', spent: 'Gastado', remaining: 'Restante', warning: 'Alerta!', youveExceeded: 'Has excedido tu presupuesto', setBudget: 'Establecer límite' },
-  fr: { dailyBudget: 'Budget Quotidien', spent: 'Dépensé', remaining: 'Restant', warning: 'Alerte!', youveExceeded: 'Vous avez dépassé votre budget', setBudget: 'Définir limite' },
-  de: { dailyBudget: 'Tagesbudget', spent: 'Ausgegeben', remaining: 'Verbleibend', warning: 'Warnung!', youveExceeded: 'Du hast dein Budget überschritten', setBudget: 'Limit setzen' }
+  en: {
+    dailyBudget: "Daily Budget",
+    spent: "Spent",
+    remaining: "Remaining",
+    warning: "Budget Limit Alert!",
+    youveExceeded: "You have exceeded your daily budget",
+    setBudget: "Set Budget Limit",
+  },
+  pl: {
+    dailyBudget: "Dzienny Budżet",
+    spent: "Wydano",
+    remaining: "Pozostało",
+    warning: "Alert!",
+    youveExceeded: "Przekroczyłeś budżet",
+    setBudget: "Ustaw limit",
+  },
+  es: {
+    dailyBudget: "Presupuesto Diario",
+    spent: "Gastado",
+    remaining: "Restante",
+    warning: "Alerta!",
+    youveExceeded: "Has excedido tu presupuesto",
+    setBudget: "Establecer límite",
+  },
+  fr: {
+    dailyBudget: "Budget Quotidien",
+    spent: "Dépensé",
+    remaining: "Restant",
+    warning: "Alerte!",
+    youveExceeded: "Vous avez dépassé votre budget",
+    setBudget: "Définir limite",
+  },
+  de: {
+    dailyBudget: "Tagesbudget",
+    spent: "Ausgegeben",
+    remaining: "Verbleibend",
+    warning: "Warnung!",
+    youveExceeded: "Du hast dein Budget überschritten",
+    setBudget: "Limit setzen",
+  },
 };
 
 export default function BudgetTracker({ userId, language }: BudgetTrackerProps) {
@@ -21,103 +56,88 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
   const [showSettings, setShowSettings] = useState(false);
   const [newBudget, setNewBudget] = useState(30);
   const [loading, setLoading] = useState(true);
-const [isPremium, setIsPremium] = useState(false);
+
+  const [isPremium, setIsPremium] = useState(false);
   const [showPremium, setShowPremium] = useState(false);
+
   const t = translations[language] || translations.en;
-useEffect(() => {
-  loadBudgetData();
-  checkSubscription();
-}, [userId]);
 
-// ✅ helper: tworzy budget, jeśli go nie ma
-const handleCreateBudget = async (uid: string, defaultLimit = 30) => {
-  const { error } = await supabase
-    .from("user_budgets")
-    .insert([{ user_id: uid, daily_limit: defaultLimit }]);
+  useEffect(() => {
+    loadBudgetData();
+    checkSubscription();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
 
-  if (error) {
-    console.error("Create budget error:", error);
-    return false;
-  }
-
-  return true;
-};
-
-const checkSubscription = async () => {
-  const { data } = await supabase
-    .from("user_subscriptions")
-    .select("is_active")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  setIsPremium(data?.is_active ?? false);
-};
-
-const loadBudgetData = async () => {
-  try {
-    const { data: budgetData } = await supabase
+  // ✅ helper: tworzy budget, jeśli go nie ma
+  const handleCreateBudget = async (uid: string, defaultLimit = 30) => {
+    const { error } = await supabase
       .from("user_budgets")
-      .select("daily_limit")
+      .insert([{ user_id: uid, daily_limit: defaultLimit }]);
+
+    if (error) {
+      console.error("Create budget error:", error);
+      return false;
+    }
+    return true;
+  };
+
+  const checkSubscription = async () => {
+    const { data } = await supabase
+      .from("user_subscriptions")
+      .select("is_active")
       .eq("user_id", userId)
       .maybeSingle();
 
-    if (budgetData) {
-      setBudgetLimit(budgetData.daily_limit);
-      setNewBudget(budgetData.daily_limit);
-    } else {
-      // ✅ jeśli nie ma rekordu — tworzymy domyślny
-      const ok = await handleCreateBudget(userId, 30);
-      if (ok) {
-        setBudgetLimit(30);
-        setNewBudget(30);
-      }
-    }
-
-    loadTodayExpenses();
-  } finally {
-    setLoading(false);
-  }
-};
-      if (ok) {
-        setBudgetLimit(30);
-        setNewBudget(30);
-      }
-    }
-
-    loadTodayExpenses();
-  } finally {
-    setLoading(false);
-  }
-};
-      if (ok) {
-        setBudgetLimit(30);
-        setNewBudget(30);
-      }
-    }
-
-    loadTodayExpenses();
-  } finally {
-    setLoading(false);
-  }
-};
+    setIsPremium(data?.is_active ?? false);
+  };
 
   const loadTodayExpenses = async () => {
-    const today = new Date().toISOString().split('T')[0];
-    const { data } = await supabase
-      .from('expenses')
-      .select('amount')
-      .eq('user_id', userId)
-      .eq('date', today);
+    const today = new Date().toISOString().split("T")[0];
 
-    const total = data?.reduce((sum, exp) => sum + parseFloat(exp.amount), 0) || 0;
+    const { data } = await supabase
+      .from("expenses")
+      .select("amount")
+      .eq("user_id", userId)
+      .eq("date", today);
+
+    const total =
+      data?.reduce((sum, exp) => sum + parseFloat(exp.amount as any), 0) || 0;
+
     setSpent(total);
+  };
+
+  const loadBudgetData = async () => {
+    try {
+      const { data: budgetData } = await supabase
+        .from("user_budgets")
+        .select("daily_limit")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (budgetData) {
+        setBudgetLimit(budgetData.daily_limit);
+        setNewBudget(budgetData.daily_limit);
+      } else {
+        // ✅ jeśli nie ma rekordu — tworzymy domyślny
+        const ok = await handleCreateBudget(userId, 30);
+        if (ok) {
+          setBudgetLimit(30);
+          setNewBudget(30);
+        }
+      }
+
+      await loadTodayExpenses();
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUpdateBudget = async () => {
     await supabase
-      .from('user_budgets')
+      .from("user_budgets")
       .update({ daily_limit: newBudget })
-      .eq('user_id', userId);
+      .eq("user_id", userId);
+
     setBudgetLimit(newBudget);
     setShowSettings(false);
   };
@@ -147,19 +167,37 @@ const loadBudgetData = async () => {
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
               <p className="text-slate-600 text-sm font-semibold mb-1">Limit</p>
-              <p className="text-3xl font-bold text-slate-800">£{budget.toFixed(2)}</p>
+              <p className="text-3xl font-bold text-slate-800">
+                £{budget.toFixed(2)}
+              </p>
             </div>
+
             <div className="text-center">
-              <p className={`text-sm font-semibold mb-1 ${isExceeded ? 'text-red-600' : 'text-slate-600'}`}>
+              <p
+                className={`text-sm font-semibold mb-1 ${
+                  isExceeded ? "text-red-600" : "text-slate-600"
+                }`}
+              >
                 {t.spent}
               </p>
-              <p className={`text-3xl font-bold ${isExceeded ? 'text-red-600' : 'text-slate-800'}`}>
+              <p
+                className={`text-3xl font-bold ${
+                  isExceeded ? "text-red-600" : "text-slate-800"
+                }`}
+              >
                 £{spent.toFixed(2)}
               </p>
             </div>
+
             <div className="text-center">
-              <p className="text-slate-600 text-sm font-semibold mb-1">{t.remaining}</p>
-              <p className={`text-3xl font-bold ${isExceeded ? 'text-red-600' : 'text-green-600'}`}>
+              <p className="text-slate-600 text-sm font-semibold mb-1">
+                {t.remaining}
+              </p>
+              <p
+                className={`text-3xl font-bold ${
+                  isExceeded ? "text-red-600" : "text-green-600"
+                }`}
+              >
                 £{remaining.toFixed(2)}
               </p>
             </div>
@@ -167,15 +205,22 @@ const loadBudgetData = async () => {
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-slate-600 font-semibold">{Math.round(percentage)}%</p>
+              <p className="text-slate-600 font-semibold">
+                {Math.round(percentage)}%
+              </p>
             </div>
+
             <div className="w-full bg-slate-200 rounded-full h-3">
               <div
                 className={`h-3 rounded-full transition-all duration-300 ${
-                  isExceeded ? 'bg-red-500' : percentage > 75 ? 'bg-yellow-500' : 'bg-green-500'
+                  isExceeded
+                    ? "bg-red-500"
+                    : percentage > 75
+                    ? "bg-yellow-500"
+                    : "bg-green-500"
                 }`}
                 style={{ width: `${Math.min(100, percentage)}%` }}
-              ></div>
+              />
             </div>
           </div>
         </div>
@@ -222,23 +267,30 @@ const loadBudgetData = async () => {
           </div>
         </div>
       )}
- {/* STATS SECTION */}
-<div className="mt-6">
-  <h3 className="text-lg font-semibold mb-2">Statistics</h3>
 
-  {isPremium ? (
-    <div className="p-4 rounded-xl bg-white shadow">
-      <p>Total spent today: £{spent}</p>
-      <p>Remaining: £{Math.max(0, budget - spent)}</p>
+      {/* STATS SECTION */}
+      <div className="mt-6">
+        <h3 className="text-lg font-semibold mb-2">Statistics</h3>
+
+        {isPremium ? (
+          <div className="p-4 rounded-xl bg-white shadow">
+            <p>Total spent today: £{spent.toFixed(2)}</p>
+            <p>Remaining: £{Math.max(0, budget - spent).toFixed(2)}</p>
+          </div>
+        ) : (
+          <div
+            onClick={() => setShowPremium(true)}
+            className="p-4 rounded-xl border border-dashed text-center cursor-pointer hover:bg-slate-50"
+          >
+            <p className="font-semibold">Premium feature</p>
+            <p className="text-sm opacity-70">Unlock statistics with Premium</p>
+            <p className="text-xs mt-2 text-blue-600 underline">Upgrade</p>
+          </div>
+        )}
+      </div>
+
+      {/* opcjonalnie jeśli masz modal w projekcie */}
+      {/* {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />} */}
     </div>
-  ) : (
-    <div
-      onClick={() => setShowPremium(true)}
-      className="p-4 rounded-xl border border-dashed text-center cursor-pointer hover:bg-slate-50"
-    >
-      <p className="font-semibold">Premium feature</p>
-      <p className="text-sm opacity-70">Unlock statistics with Premium</p>
-      <p className="text-xs mt-2 text-blue-600 underline">Upgrade</p>
-    </div>
-  )}
-</div>       
+  );
+} 
