@@ -289,8 +289,32 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
         )}
       </div>
 
-      {/* opcjonalnie jeśli masz modal w projekcie */}
-      {/* {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />} */}
+    {showPremium && (
+  <div className="fixed inset-0 bg-black/50 flex items-end z-50">
+    <div className="bg-white w-full rounded-t-3xl p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xl font-bold">Premium</h3>
+        <button
+          onClick={() => setShowPremium(false)}
+          className="px-3 py-1 rounded-lg border"
+        >
+          Close
+        </button>
+      </div>
+
+      <p className="text-slate-700">
+        Tutaj będzie info o Premium / przycisk do płatności.
+      </p>
+
+      <button
+        onClick={() => setShowPremium(false)}
+        className="mt-4 w-full py-3 bg-blue-600 text-white rounded-xl font-bold"
+      >
+        OK
+      </button>
+    </div>
+  </div>
+)}
     </div>
   );
 } 
