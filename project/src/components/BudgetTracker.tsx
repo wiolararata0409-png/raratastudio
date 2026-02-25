@@ -303,9 +303,10 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
       </div>
 
       <p className="text-slate-700">
-     {showPremium && (
+{showPremium && (
   <div className="fixed inset-0 bg-black/50 flex items-end z-50">
     <div className="bg-white w-full rounded-t-3xl p-6">
+      
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-bold">Premium</h3>
         <button
@@ -316,27 +317,26 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
         </button>
       </div>
 
-   <a
-  href="https://buy.stripe.com/4gM4gAg1H9mv4wi64Vf3a00"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="mt-4 w-full block text-center py-3 bg-blue-600 text-white rounded-xl font-bold"
->
-  Buy Premium
-</a>
+      <p className="text-slate-700">
+        Unlock full statistics and premium features.
+      </p>
 
-<button
-  onClick={() => setShowPremium(false)}
-  className="mt-3 w-full py-2 border rounded-lg"
->
-  Close
-</button>
+      <a
+        href="https://buy.stripe.com/4gM4gAg1H9mv4wi64Vf3a00"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-4 w-full block text-center py-3 bg-blue-600 text-white rounded-xl font-bold"
+      >
+        Buy Premium
+      </a>
+
+      <button
+        onClick={() => setShowPremium(false)}
+        className="mt-3 w-full py-2 border rounded-lg"
+      >
+        Close
+      </button>
+
     </div>
   </div>
 )}
-    </div>
-  </div>
-)}
-    </div>
-  );
-} 
