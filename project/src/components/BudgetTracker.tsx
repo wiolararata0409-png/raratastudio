@@ -278,16 +278,20 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
             <p>Remaining: £{Math.max(0, budget - spent).toFixed(2)}</p>
           </div>
         ) : (
-          <div
-            onClick={() => setShowPremium(true)}
-            className="p-4 rounded-xl border border-dashed text-center cursor-pointer hover:bg-slate-50"
-          >
-            <p className="font-semibold">Premium feature</p>
-            <p className="text-sm opacity-70">Unlock statistics with Premium</p>
-            <p className="text-xs mt-2 text-blue-600 underline">Upgrade</p>
-          </div>
-        )}
-      </div>
+     <div
+  onClick={() => setShowPremium(true)}
+  className="p-4 rounded-xl border border-dashed text-center cursor-pointer hover:bg-slate-50"
+>
+  <p className="font-semibold">Premium feature</p>
+
+  <p className="text-sm opacity-70">
+    Unlock statistics with Premium
+  </p>
+
+  <p className="text-xs mt-2 text-blue-600 underline">
+    Upgrade
+  </p>
+</div>
 
     {showPremium && (
   <div className="fixed inset-0 bg-black/50 flex items-end z-50">
