@@ -22,6 +22,7 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
   const [newBudget, setNewBudget] = useState(30);
   const [loading, setLoading] = useState(true);
 const [isPremium, setIsPremium] = useState(false);
+  const [showPremium, setShowPremium] = useState(false);
   const t = translations[language] || translations.en;
 
  useEffect(() => {
@@ -278,15 +279,14 @@ const loadBudgetData = async () => {
   <h3 className="text-lg font-semibold mb-2">Statistics</h3>
 
   {isPremium ? (
-    <div className="p-4 rounded-xl bg-white shadow">
-      <p>Total spent today: £{spent}</p>
-      <p>Remaining: £{Math.max(0, budget - spent)}</p>
-    </div>
-  ) : (
-    <div className="p-4 rounded-xl border border-dashed text-center">
-      <p className="font-semibold">Premium feature</p>
-      <p className="text-sm opacity-70">Unlock statistics with Premium</p>
-    </div>
+<div
+  onClick={() => setShowPremium(true)}
+  className="p-4 rounded-xl border border-dashed text-center cursor-pointer hover:bg-slate-50"
+>
+  <p className="font-semibold">Premium feature</p>
+  <p className="text-sm opacity-70">Unlock statistics with Premium</p>
+  <p className="text-xs mt-2 text-blue-600 underline">Upgrade</p>
+</div>
   )}
 </div>
     </div>
