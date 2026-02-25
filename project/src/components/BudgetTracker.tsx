@@ -92,18 +92,7 @@ const loadBudgetData = async () => {
     } else {
       // ✅ jeśli nie ma rekordu — tworzymy domyślny
     // ✅ helper: tworzy budget, jeśli go nie ma
-const handleCreateBudget = async (uid: string, defaultLimit = 30) => {
-  const { error } = await supabase
-    .from("user_budgets")
-    .insert([{ user_id: uid, daily_limit: defaultLimit }]);
 
-  if (error) {
-    console.error("Create budget error:", error);
-    return false;
-  }
-
-  return true;
-};
 
 const loadBudgetData = async () => {
   try {
