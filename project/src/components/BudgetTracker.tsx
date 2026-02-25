@@ -321,20 +321,25 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
         </button>
       </div>
 
-      <p className="text-slate-700">
-        Unlock full statistics and premium features.
-      </p>
+    <p className="text-slate-700">
+Unlock full statistics and premium features.
+</p>
 
-      <a
-        href="https://buy.stripe.com/4gM4gAg1H9mv4wi64Vf3a00"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-4 w-full block text-center py-3 bg-blue-600 text-white rounded-xl font-bold"
-      >
-        Buy Premium
-      </a>
+<a
+  href="https://buy.stripe.com/4gM4gAg1H9mv4wi64Vf3a00"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="mt-4 w-full block text-center py-3 bg-blue-600 text-white rounded-xl font-semibold"
+>
+  Buy Premium
+</a>
 
-      <button
+<button
+  onClick={() => setShowPremium(false)}
+  className="mt-3 w-full py-2 border rounded-lg"
+>
+  Close
+</button>
         onClick={() => setShowPremium(false)}
         className="mt-3 w-full py-2 border rounded-lg"
       >
