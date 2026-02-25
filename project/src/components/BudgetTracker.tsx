@@ -278,17 +278,18 @@ const loadBudgetData = async () => {
 <div className="mt-6">
   <h3 className="text-lg font-semibold mb-2">Statistics</h3>
 
-  {isPremium ? (
-<div
-  onClick={() => setShowPremium(true)}
-  className="p-4 rounded-xl border border-dashed text-center cursor-pointer hover:bg-slate-50"
->
-  <p className="font-semibold">Premium feature</p>
-  <p className="text-sm opacity-70">Unlock statistics with Premium</p>
-  <p className="text-xs mt-2 text-blue-600 underline">Upgrade</p>
-</div>
-  )}
-</div>
-    </div>
-  );
-}
+ {isPremium ? (
+  <div className="p-4 rounded-xl bg-white shadow">
+    <p>Total spent today: £{spent}</p>
+    <p>Remaining: £{Math.max(0, budget - spent)}</p>
+  </div>
+) : (
+  <div
+    onClick={() => setShowPremium(true)}
+    className="p-4 rounded-xl border border-dashed text-center cursor-pointer"
+  >
+    <p className="font-semibold">Premium feature</p>
+    <p className="text-sm opacity-70">Unlock statistics with Premium</p>
+    <p className="text-xs mt-2 text-blue-600 underline">Upgrade</p>
+  </div>
+)}
