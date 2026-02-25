@@ -317,7 +317,7 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
       </div>
 
    <a
-  href=https://buy.stripe.com/4gM4gAg1H9mv4wi64Vf3a00
+  href="https://buy.stripe.com/4gM4gAg1H9mv4wi64Vf3a00"
   target="_blank"
   rel="noopener noreferrer"
   className="mt-4 w-full block text-center py-3 bg-blue-600 text-white rounded-xl font-bold"
