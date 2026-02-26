@@ -277,55 +277,52 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
             <p>Total spent today: £{spent.toFixed(2)}</p>
             <p>Remaining: £{Math.max(0, budget - spent).toFixed(2)}</p>
           </div>
-        ) : (
-     <div
-  onClick={() => setShowPremium(true)}
-  className="p-4 rounded-xl border border-dashed text-center cursor-pointer hover:bg-slate-50"
->
-  <p className="font-semibold">Premium feature</p>
+     ) : (
+  <>
+    <div
+      onClick={() => setShowPremium(true)}
+      className="p-4 rounded-xl border border-dashed text-center cursor-pointer hover:bg-slate-50"
+    >
+      <p className="font-semibold">Premium feature</p>
 
-  <p className="text-sm opacity-70">
-    Unlock statistics with Premium
-  </p>
+      <p className="text-sm opacity-70">Unlock statistics with Premium</p>
 
-  <p className="text-xs mt-2 text-blue-600 underline">
-    Upgrade
-  </p>
-</div>
-
-{showPremium && (
-  <div className="fixed inset-0 bg-black/50 flex items-end z-50">
-    <div className="bg-white w-full rounded-t-3xl p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-bold">Premium</h3>
-
-        <button
-          onClick={() => setShowPremium(false)}
-          className="px-3 py-1 rounded-lg border"
-        >
-          Close
-        </button>
-      </div>
-
-      <p className="text-slate-700">
-        Unlock full statistics and premium features.
-      </p>
-
-      <a
-        href="https://buy.stripe.com/TU_WKLEJ_SWOJ_LINK"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-4 w-full block text-center py-3 bg-blue-600 text-white rounded-xl font-semibold"
-      >
-        Buy Premium
-      </a>
-
-      <button
-        onClick={() => setShowPremium(false)}
-        className="mt-3 w-full py-2 border rounded-lg"
-      >
-        Close
-      </button>
+      <p className="text-xs mt-2 text-blue-600 underline">Upgrade</p>
     </div>
-  </div>
+
+    {showPremium && (
+      <div className="fixed inset-0 bg-black/50 flex items-end z-50">
+        <div className="bg-white w-full rounded-t-3xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold">Premium</h3>
+
+            <button
+              onClick={() => setShowPremium(false)}
+              className="px-3 py-1 rounded-lg border"
+            >
+              Close
+            </button>
+          </div>
+
+          <p className="text-slate-700">Unlock full statistics and premium features.</p>
+
+          <a
+            href="https://buy.stripe.com/TU_WKLEJ_SWOJ_LINK"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 w-full block text-center py-3 bg-blue-600 text-white rounded-xl font-semibold"
+          >
+            Buy Premium
+          </a>
+
+          <button
+            onClick={() => setShowPremium(false)}
+            className="mt-3 w-full py-2 border rounded-lg"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    )}
+  </>
 )}
