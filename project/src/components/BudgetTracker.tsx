@@ -383,12 +383,7 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
                     {t.buyPremium}
                   </a>
 
-                  <button
-                    onClick={() => setShowPremium(false)}
-                    className="mt-3 w-full py-2 border rounded-lg"
-                  >
-                    {t.close}
-                  </button>
+                
                 </div>
               </div>
             )}
