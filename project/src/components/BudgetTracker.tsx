@@ -15,6 +15,18 @@ const translations: Record<string, Record<string, string>> = {
     warning: "Budget Limit Alert!",
     youveExceeded: "You have exceeded your daily budget",
     setBudget: "Set Budget Limit",
+    cancel: "Cancel",
+    save: "Save",
+    statistics: "Statistics",
+    premiumFeature: "Premium feature",
+    unlockStats: "Unlock statistics with Premium",
+    upgrade: "Upgrade",
+    premium: "Premium",
+    premiumDesc: "Unlock full statistics and premium features.",
+    buyPremium: "Buy Premium",
+    close: "Close",
+    limit: "Limit",
+    loading: "Loading...",
   },
   pl: {
     dailyBudget: "Dzienny Budżet",
@@ -23,6 +35,18 @@ const translations: Record<string, Record<string, string>> = {
     warning: "Alert!",
     youveExceeded: "Przekroczyłeś budżet",
     setBudget: "Ustaw limit",
+    cancel: "Anuluj",
+    save: "Zapisz",
+    statistics: "Statystyki",
+    premiumFeature: "Funkcja Premium",
+    unlockStats: "Odblokuj statystyki dzięki Premium",
+    upgrade: "Ulepsz",
+    premium: "Premium",
+    premiumDesc: "Odblokuj pełne statystyki i funkcje premium.",
+    buyPremium: "Kup Premium",
+    close: "Zamknij",
+    limit: "Limit",
+    loading: "Ładowanie...",
   },
   es: {
     dailyBudget: "Presupuesto Diario",
@@ -31,6 +55,18 @@ const translations: Record<string, Record<string, string>> = {
     warning: "Alerta!",
     youveExceeded: "Has excedido tu presupuesto",
     setBudget: "Establecer límite",
+    cancel: "Cancelar",
+    save: "Guardar",
+    statistics: "Estadísticas",
+    premiumFeature: "Función Premium",
+    unlockStats: "Desbloquea estadísticas con Premium",
+    upgrade: "Mejorar",
+    premium: "Premium",
+    premiumDesc: "Desbloquea estadísticas completas y funciones premium.",
+    buyPremium: "Comprar Premium",
+    close: "Cerrar",
+    limit: "Límite",
+    loading: "Cargando...",
   },
   fr: {
     dailyBudget: "Budget Quotidien",
@@ -39,6 +75,18 @@ const translations: Record<string, Record<string, string>> = {
     warning: "Alerte!",
     youveExceeded: "Vous avez dépassé votre budget",
     setBudget: "Définir limite",
+    cancel: "Annuler",
+    save: "Enregistrer",
+    statistics: "Statistiques",
+    premiumFeature: "Fonction Premium",
+    unlockStats: "Débloquez les statistiques avec Premium",
+    upgrade: "Mettre à niveau",
+    premium: "Premium",
+    premiumDesc: "Débloquez les statistiques complètes et les fonctions premium.",
+    buyPremium: "Acheter Premium",
+    close: "Fermer",
+    limit: "Limite",
+    loading: "Chargement...",
   },
   de: {
     dailyBudget: "Tagesbudget",
@@ -47,12 +95,27 @@ const translations: Record<string, Record<string, string>> = {
     warning: "Warnung!",
     youveExceeded: "Du hast dein Budget überschritten",
     setBudget: "Limit setzen",
+    cancel: "Abbrechen",
+    save: "Speichern",
+    statistics: "Statistiken",
+    premiumFeature: "Premium-Funktion",
+    unlockStats: "Statistiken mit Premium freischalten",
+    upgrade: "Upgrade",
+    premium: "Premium",
+    premiumDesc: "Schalte volle Statistiken und Premium-Funktionen frei.",
+    buyPremium: "Premium kaufen",
+    close: "Schließen",
+    limit: "Limit",
+    loading: "Laden...",
   },
 };
+
+const STRIPE_MONTHLY_URL = "https://buy.stripe.com/TU_WKLEJ_SWOJ_LINK"; // <- podmień na swój link
 
 export default function BudgetTracker({ userId, language }: BudgetTrackerProps) {
   const [budget, setBudgetLimit] = useState(30);
   const [spent, setSpent] = useState(0);
+
   const [showSettings, setShowSettings] = useState(false);
   const [newBudget, setNewBudget] = useState(30);
   const [loading, setLoading] = useState(true);
@@ -68,7 +131,6 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  // ✅ helper: tworzy budget, jeśli go nie ma
   const handleCreateBudget = async (uid: string, defaultLimit = 30) => {
     const { error } = await supabase
       .from("user_budgets")
@@ -118,7 +180,6 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
         setBudgetLimit(budgetData.daily_limit);
         setNewBudget(budgetData.daily_limit);
       } else {
-        // ✅ jeśli nie ma rekordu — tworzymy domyślny
         const ok = await handleCreateBudget(userId, 30);
         if (ok) {
           setBudgetLimit(30);
@@ -147,11 +208,12 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
   const isExceeded = spent > budget;
 
   if (loading) {
-    return <div className="text-center py-12 text-slate-600">Loading...</div>;
+    return <div className="text-center py-12 text-slate-600">{t.loading}</div>;
   }
 
   return (
     <div className="space-y-4">
+      {/* TOP CARD */}
       <div className="bg-white rounded-3xl shadow-lg p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-slate-800">{t.dailyBudget}</h2>
@@ -166,7 +228,9 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
         <div className="space-y-6">
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
-              <p className="text-slate-600 text-sm font-semibold mb-1">Limit</p>
+              <p className="text-slate-600 text-sm font-semibold mb-1">
+                {t.limit}
+              </p>
               <p className="text-3xl font-bold text-slate-800">
                 £{budget.toFixed(2)}
               </p>
@@ -227,7 +291,10 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
 
         {isExceeded && (
           <div className="mt-6 flex items-start gap-3 bg-red-50 border-2 border-red-300 rounded-xl p-4">
-            <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={24} />
+            <AlertCircle
+              className="text-red-600 flex-shrink-0 mt-0.5"
+              size={24}
+            />
             <div>
               <p className="font-bold text-red-700 text-lg">{t.warning}</p>
               <p className="text-red-600 text-sm">{t.youveExceeded}</p>
@@ -236,10 +303,13 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
         )}
       </div>
 
+      {/* SETTINGS MODAL */}
       {showSettings && (
         <div className="fixed inset-0 bg-black/50 flex items-end z-50">
           <div className="bg-white w-full rounded-t-3xl p-6 animate-in slide-in-from-bottom">
-            <h3 className="text-2xl font-bold text-slate-800 mb-4">{t.setBudget}</h3>
+            <h3 className="text-2xl font-bold text-slate-800 mb-4">
+              {t.setBudget}
+            </h3>
             <div className="space-y-4">
               <input
                 type="number"
@@ -254,13 +324,13 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
                   onClick={() => setShowSettings(false)}
                   className="flex-1 py-3 border-2 border-slate-300 rounded-xl font-bold text-slate-700 hover:bg-slate-50 transition"
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
                 <button
                   onClick={handleUpdateBudget}
                   className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:shadow-lg transition"
                 >
-                  Save
+                  {t.save}
                 </button>
               </div>
             </div>
@@ -270,59 +340,61 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
 
       {/* STATS SECTION */}
       <div className="mt-6">
-        <h3 className="text-lg font-semibold mb-2">Statistics</h3>
+        <h3 className="text-lg font-semibold mb-2">{t.statistics}</h3>
 
         {isPremium ? (
           <div className="p-4 rounded-xl bg-white shadow">
             <p>Total spent today: £{spent.toFixed(2)}</p>
             <p>Remaining: £{Math.max(0, budget - spent).toFixed(2)}</p>
           </div>
-     ) : (
-  <>
-    <div
-      onClick={() => setShowPremium(true)}
-      className="p-4 rounded-xl border border-dashed text-center cursor-pointer hover:bg-slate-50"
-    >
-      <p className="font-semibold">Premium feature</p>
-
-      <p className="text-sm opacity-70">Unlock statistics with Premium</p>
-
-      <p className="text-xs mt-2 text-blue-600 underline">Upgrade</p>
-    </div>
-
-    {showPremium && (
-      <div className="fixed inset-0 bg-black/50 flex items-end z-50">
-        <div className="bg-white w-full rounded-t-3xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold">Premium</h3>
-
-            <button
-              onClick={() => setShowPremium(false)}
-              className="px-3 py-1 rounded-lg border"
+        ) : (
+          <>
+            <div
+              onClick={() => setShowPremium(true)}
+              className="p-4 rounded-xl border border-dashed text-center cursor-pointer hover:bg-slate-50"
             >
-              Close
-            </button>
-          </div>
+              <p className="font-semibold">{t.premiumFeature}</p>
+              <p className="text-sm opacity-70">{t.unlockStats}</p>
+              <p className="text-xs mt-2 text-blue-600 underline">{t.upgrade}</p>
+            </div>
 
-          <p className="text-slate-700">Unlock full statistics and premium features.</p>
+            {showPremium && (
+              <div className="fixed inset-0 bg-black/50 flex items-end z-50">
+                <div className="bg-white w-full rounded-t-3xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold">{t.premium}</h3>
 
-          <a
-            href="https://buy.stripe.com/TU_WKLEJ_SWOJ_LINK"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-4 w-full block text-center py-3 bg-blue-600 text-white rounded-xl font-semibold"
-          >
-            Buy Premium
-          </a>
+                    <button
+                      onClick={() => setShowPremium(false)}
+                      className="px-3 py-1 rounded-lg border"
+                    >
+                      {t.close}
+                    </button>
+                  </div>
 
-          <button
-            onClick={() => setShowPremium(false)}
-            className="mt-3 w-full py-2 border rounded-lg"
-          >
-            Close
-          </button>
-        </div>
+                  <p className="text-slate-700">{t.premiumDesc}</p>
+
+                  <a
+                    href={STRIPE_MONTHLY_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 w-full block text-center py-3 bg-blue-600 text-white rounded-xl font-semibold"
+                  >
+                    {t.buyPremium}
+                  </a>
+
+                  <button
+                    onClick={() => setShowPremium(false)}
+                    className="mt-3 w-full py-2 border rounded-lg"
+                  >
+                    {t.close}
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
-    )}
-  </>
-)}
+    </div>
+  );
+}
