@@ -110,7 +110,7 @@ const translations: Record<string, Record<string, string>> = {
   },
 };
 
-const STRIPE_MONTHLY_URL = "https://buy.stripe.com/TU_WKLEJ_SWOJ_LINK"; // <- podmień na swój link
+const STRIPE_MONTHLY_URL = "https://buy.stripe.com/4gM4gAg1H9mv4wi64Vf3a00"; // <- podmień na swój link
 
 export default function BudgetTracker({ userId, language }: BudgetTrackerProps) {
   const [budget, setBudgetLimit] = useState(30);
