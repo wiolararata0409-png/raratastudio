@@ -177,12 +177,39 @@ const handleUnsubscribe = async () => {
   try {
     setLoading(true);
 
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const token = session?.access_token;
+
+    if (!token) {
+      alert("You must be logged in.");
+      return;
+    }
+
     const response = await fetch("/.netlify/functions/create-portal-session", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     });
+
+    const data = await response.json();
+
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert(data.error || "Failed to open billing portal.");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Something went wrong.");
+  } finally {
+    setLoading(false);
+  }
+};
 
     const data = await response.json();
 
