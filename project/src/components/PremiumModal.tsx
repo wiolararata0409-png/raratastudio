@@ -173,9 +173,31 @@ export default function PremiumModal({
   };
 
   // Jeśli masz endpoint do anulowania subskrypcji, tu podepniesz
-  const handleUnsubscribe = async () => {
-    alert("Unsubscribe handler not implemented yet.");
-  };
+const handleUnsubscribe = async () => {
+  try {
+    setLoading(true);
+
+    const response = await fetch("/.netlify/functions/create-portal-session", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert("Failed to open billing portal.");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Something went wrong.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (!isOpen) return null;
 
