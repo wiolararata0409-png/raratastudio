@@ -210,6 +210,17 @@ const handleUnsubscribe = async () => {
     setLoading(false);
   }
 };
+      window.location.href = data.url;
+    } else {
+      alert(data.error || "Failed to open billing portal.");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Something went wrong.");
+  } finally {
+    setLoading(false);
+  }
+};
 
     const data = await response.json();
 
