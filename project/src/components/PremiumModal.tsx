@@ -1,7 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
-
-// Jeśli masz lucide-react w projekcie – OK. Jak nie, usuń import i ikonki.
 import { Check, Crown, AlertCircle } from "lucide-react";
 
 type PlanType = "monthly" | "yearly";
@@ -11,7 +9,7 @@ interface PremiumModalProps {
   onClose: () => void;
   isPremium: boolean;
   language: string;
-  userId?: string; // opcjonalnie, ale i tak pobieramy świeżo z Supabase
+  userId?: string;
 }
 
 const translations: Record<string, any> = {
@@ -57,12 +55,10 @@ export default function PremiumModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Upewnij się, że modal resetuje błąd po otwarciu
   useEffect(() => {
     if (isOpen) setError(null);
   }, [isOpen]);
 
-  // Stripe priceId z ENV (Vite)
   const priceIds = useMemo(
     () => ({
       monthly: import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID as string | undefined,
@@ -81,50 +77,36 @@ export default function PremiumModal({
       if (!priceId) {
         console.error("Price ID not configured for plan:", planType);
         setError(t.invalidPrice);
-        setLoading(false);
         return;
       }
 
-      // 1) Pobierz sesję
+      // session (token)
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) console.error("getSession error:", sessionError);
-
       const session = sessionData?.session || null;
 
-      // 2) Pobierz usera NA ŚWIEŻO (pewniejsze niż propsy)
+      // user fresh
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError) console.error("getUser error:", userError);
 
       const freshUserId =
-        userData?.user?.id ||
-        session?.user?.id ||
-        userIdFromProps ||
-        null;
-
-      console.log("SESSION:", session);
-      console.log("USER FROM getUser:", userData?.user);
-      console.log("freshUserId:", freshUserId);
+        userData?.user?.id || session?.user?.id || userIdFromProps || null;
 
       if (!freshUserId) {
         setError(t.missingUser);
-        setLoading(false);
         return;
       }
 
-      // 3) Edge Function URL
+      // Supabase Edge Function
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`;
 
       const payload = {
-        userId: freshUserId, // ✅ KLUCZOWE: to rozwiązuje "Missing userId"
+        userId: freshUserId,
         plan: planType,
         priceId,
         successUrl: `${window.location.origin}?checkout=success`,
         cancelUrl: `${window.location.origin}?checkout=cancel`,
       };
-
-      console.log("Starting checkout for plan:", planType, "with priceId:", priceId);
-      console.log("Calling URL:", url);
-      console.log("PAYLOAD:", payload);
 
       const response = await fetch(url, {
         method: "POST",
@@ -139,103 +121,74 @@ export default function PremiumModal({
       let data: any = null;
       try {
         data = await response.json();
-      } catch (e) {
-        // jeśli backend nie zwróci JSON
+      } catch {
         data = null;
       }
-
-      console.log("Checkout response:", { status: response.status, data });
 
       if (!response.ok) {
         const backendMessage =
           data?.error || data?.message || data?.details || t.genericError;
-
-        // Najczęstsze: Missing userId / Missing STRIPE_SECRET_KEY itd.
         setError(typeof backendMessage === "string" ? backendMessage : t.genericError);
-        setLoading(false);
         return;
       }
 
-      // Zakładamy, że edge function zwraca np. { url: "https://checkout.stripe.com/..." }
       const checkoutUrl = data?.url;
       if (!checkoutUrl) {
         setError(t.genericError);
-        setLoading(false);
         return;
       }
 
       window.location.href = checkoutUrl;
-    } catch (err: any) {
+    } catch (err) {
       console.error("Checkout error:", err);
       setError(t.genericError);
+    } finally {
       setLoading(false);
     }
   };
 
-  // Jeśli masz endpoint do anulowania subskrypcji, tu podepniesz
-const handleUnsubscribe = async () => {
-  try {
-    setLoading(true);
+  const handleUnsubscribe = async () => {
+    try {
+      setLoading(true);
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    const token = session?.access_token;
+      const token = session?.access_token;
 
-    if (!token) {
-      alert("You must be logged in.");
-      return;
+      if (!token) {
+        alert("You must be logged in.");
+        return;
+      }
+
+      const response = await fetch("/.netlify/functions/create-portal-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data?.error || "Failed to open billing portal.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong.");
+    } finally {
+      setLoading(false);
     }
-
-    const response = await fetch("/.netlify/functions/create-portal-session", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    const data = await response.json();
-
-    if (data.url) {
-      window.location.href = data.url;
-    } else {
-      alert(data.error || "Failed to open billing portal.");
-    }
-  } catch (error) {
-    console.error(error);
-    alert("Something went wrong.");
-  } finally {
-    setLoading(false);
-  }
-};
-      window.location.href = data.url;
-    } else {
-      alert(data.error || "Failed to open billing portal.");
-    }
-  } catch (error) {
-    console.error(error);
-    alert("Something went wrong.");
-  } finally {
-    setLoading(false);
-  }
-};
-
-    const data = await response.json();
-
-    if (data.url) {
-      window.location.href = data.url;
-    } else {
-      alert("Failed to open billing portal.");
-    }
-  } catch (error) {
-    console.error(error);
-    alert("Something went wrong.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   if (!isOpen) return null;
 
@@ -266,45 +219,45 @@ const handleUnsubscribe = async () => {
             </div>
           </div>
         )}
+
         {!isPremium && (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {/* MONTHLY */}
+            <div className="border-2 border-slate-200 rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-slate-800 mb-1">
+                Monthly - £2.99
+              </h3>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {/* MONTHLY */}
-          <div className="border-2 border-slate-200 rounded-2xl p-6">
-            <h3 className="text-lg font-bold text-slate-800 mb-1">
-              Monthly - £2.99
-            </h3>
-
-            <button
-              onClick={() => handleSubscribe("monthly")}
-              disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:shadow-lg transition disabled:opacity-50"
-            >
-              {loading ? t.processing : t.subscribe}
-            </button>
-          </div>
-
-          {/* YEARLY */}
-          <div className="border-2 border-yellow-400 rounded-2xl p-6 bg-yellow-50 relative">
-            <div className="absolute -top-3 right-6 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">
-              {t.bestValue}
+              <button
+                onClick={() => handleSubscribe("monthly")}
+                disabled={loading}
+                className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:shadow-lg transition disabled:opacity-50"
+              >
+                {loading ? t.processing : t.subscribe}
+              </button>
             </div>
 
-            <h3 className="text-lg font-bold text-slate-800 mb-1">
-              Yearly - £26.99
-            </h3>
-            <p className="text-sm text-slate-600 mb-3">{t.saveUpTo}</p>
+            {/* YEARLY */}
+            <div className="border-2 border-yellow-400 rounded-2xl p-6 bg-yellow-50 relative">
+              <div className="absolute -top-3 right-6 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">
+                {t.bestValue}
+              </div>
 
-            <button
-              onClick={() => handleSubscribe("yearly")}
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-3 rounded-xl font-bold hover:shadow-lg transition disabled:opacity-50"
-            >
-              {loading ? t.processing : t.subscribe}
-            </button>
+              <h3 className="text-lg font-bold text-slate-800 mb-1">
+                Yearly - £26.99
+              </h3>
+              <p className="text-sm text-slate-600 mb-3">{t.saveUpTo}</p>
+
+              <button
+                onClick={() => handleSubscribe("yearly")}
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-3 rounded-xl font-bold hover:shadow-lg transition disabled:opacity-50"
+              >
+                {loading ? t.processing : t.subscribe}
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
         <div className="mt-6">
           <div className="font-semibold text-slate-800 mb-2">{t.included}</div>
