@@ -122,7 +122,7 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
 
   const [isPremium, setIsPremium] = useState(false);
   const [showPremium, setShowPremium] = useState(false);
-
+ const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">("monthly");
   const t = translations[language] || translations.en;
 
   useEffect(() => {
@@ -373,9 +373,28 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
                   </div>
 
                   <p className="text-slate-700">{t.premiumDesc}</p>
+                
+                  <div className="flex gap-4 mt-4">
+  <button
+    onClick={() => setSelectedPlan("monthly")}
+    className={`px-4 py-2 rounded ${
+      selectedPlan === "monthly" ? "bg-blue-600 text-white" : "bg-gray-200"
+    }`}
+  >
+    Monthly
+  </button>
 
+  <button
+    onClick={() => setSelectedPlan("yearly")}
+    className={`px-4 py-2 rounded ${
+      selectedPlan === "yearly" ? "bg-blue-600 text-white" : "bg-gray-200"
+    }`}
+  >
+    Yearly
+  </button>
+</div>
                   <a
-                    href={STRIPE_MONTHLY_URL}
+                    href={selectedPlan === "monthly" ? STRIPE_MONTHLY_URL : STRIPE_YEARLY_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-4 w-full block text-center py-3 bg-blue-600 text-white rounded-xl font-semibold"
