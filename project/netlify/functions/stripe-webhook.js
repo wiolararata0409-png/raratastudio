@@ -9,75 +9,72 @@ const supabaseAdmin = createClient(
 );
 
 export const handler = async (event) => {
-  // Stripe wysyła POST
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
-  const sig =
-    event.headers["stripe-signature"] || event.headers["Stripe-Signature"];
-
-  if (!sig) {
-    return { statusCode: 400, body: "Missing Stripe-Signature header" };
-  }
-
-  // WAŻNE: Stripe wymaga "surowego" body (RAW), nie JSON.parse
-  const rawBody = event.isBase64Encoded
-    ? Buffer.from(event.body, "base64")
-    : event.body;
-
-  let stripeEvent;
   try {
-    stripeEvent = stripe.webhooks.constructEvent(
-      rawBody,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
-  } catch (err) {
-    console.error("❌ Stripe signature verification failed:", err.message);
-    return { statusCode: 400, body: `Webhook Error: ${err.message}` };
-  }
+    // 1) Bierzemy token zalogowanego usera z frontendu
+    const authHeader = event.headers.authorization || event.headers.Authorization;
+    const token = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice("Bearer ".length)
+      : null;
 
-  try {
-    // Po udanej płatności
-    if (stripeEvent.type === "checkout.session.completed") {
-      const session = stripeEvent.data.object;
-
-      // To przyjdzie z parametru Payment Linka: ?client_reference_id=USER_ID
-      const userId = session.client_reference_id;
-
-      if (!userId) {
-        console.warn("No client_reference_id on session", session.id);
-        return { statusCode: 200, body: "No client_reference_id (ignored)" };
-      }
-
-      const stripeCustomerId = session.customer || null;
-      const stripeSubscriptionId = session.subscription || null;
-
-      // Ustaw premium w tabeli "subscriptions" (tej ze zdjęcia 2)
-      const { error } = await supabaseAdmin
-        .from("subscriptions")
-        .upsert(
-          {
-            user_id: userId,
-            is_active: true,
-            stripe_customer_id: stripeCustomerId,
-            stripe_subscription_id: stripeSubscriptionId,
-          },
-          { onConflict: "user_id" }
-        );
-
-      if (error) {
-        console.error("❌ Supabase update error:", error);
-        return { statusCode: 500, body: "DB update failed" };
-      }
-
-      console.log("✅ Premium activated for user:", userId);
+    if (!token) {
+      return {
+        statusCode: 401,
+        body: JSON.stringify({ error: "Missing Authorization token" }),
+      };
     }
 
-    return { statusCode: 200, body: "ok" };
+    // 2) Sprawdzamy usera po tokenie
+    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
+    if (userError || !userData?.user) {
+      return {
+        statusCode: 401,
+        body: JSON.stringify({ error: "Invalid token" }),
+      };
+    }
+
+    const userId = userData.user.id;
+
+    // 3) Bierzemy stripe_customer_id z tabeli subscriptions
+    const { data: sub, error: subError } = await supabaseAdmin
+      .from("subscriptions")
+      .select("stripe_customer_id")
+      .eq("user_id", userId)
+      .single();
+
+    if (subError || !sub?.stripe_customer_id) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "No Stripe customer for this user" }),
+      };
+    }
+
+    // 4) Tworzymy link do Stripe Customer Portal
+    const origin =
+      event.headers.origin ||
+      event.headers.Origin ||
+      process.env.SITE_URL ||
+      "https://raratastudio.netlify.app";
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: sub.stripe_customer_id,
+      return_url: origin,
+    });
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ url: session.url }),
+      headers: { "Content-Type": "application/json" },
+    };
   } catch (err) {
-    console.error("❌ Webhook handler error:", err);
-    return { statusCode: 500, body: "Server error" };
+    console.error("create-portal-session error:", err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Server error" }),
+      headers: { "Content-Type": "application/json" },
+    };
   }
 };
