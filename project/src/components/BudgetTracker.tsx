@@ -111,7 +111,7 @@ const translations: Record<string, Record<string, string>> = {
 };
 
 const STRIPE_MONTHLY_URL = "https://buy.stripe.com/4gM4gAg1H9mv4wi64Vf3a00"; // <- podmień na swój link
-
+const STRIPE_YEARLY_URL = "https://buy.stripe.com/3cI6oI8zf1U38My9h7f3a01";
 export default function BudgetTracker({ userId, language }: BudgetTrackerProps) {
   const [budget, setBudgetLimit] = useState(30);
   const [spent, setSpent] = useState(0);
