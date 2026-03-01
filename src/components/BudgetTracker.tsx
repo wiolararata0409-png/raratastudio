@@ -7,6 +7,7 @@ interface BudgetTrackerProps {
   language: string;
   isPremium: boolean;
 }
+
 const translations: Record<string, Record<string, string>> = {
   en: { dailyBudget: 'Daily Budget', spent: 'Spent', remaining: 'Remaining', warning: 'Budget Limit Alert!', youveExceeded: 'You have exceeded your daily budget', setBudget: 'Set Budget Limit' },
   pl: { dailyBudget: 'Dzienny Budżet', spent: 'Wydano', remaining: 'Pozostało', warning: 'Alert!', youveExceeded: 'Przekroczyłeś budżet', setBudget: 'Ustaw limit' },
@@ -21,13 +22,21 @@ export default function BudgetTracker({ userId, language, isPremium }: BudgetTra
   const [showSettings, setShowSettings] = useState(false);
   const [newBudget, setNewBudget] = useState(30);
   const [loading, setLoading] = useState(true);
-const [history, setHistory] = useState<any[]>([]);
-const [historyLoading, setHistoryLoading] = useState(false);
+  const [history, setHistory] = useState<any[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
   const t = translations[language] || translations.en;
 
   useEffect(() => {
     loadBudgetData();
   }, [userId]);
+
+  // ✅ TO DODAJ (ważne!)
+  useEffect(() => {
+    if (isPremium) {
+      loadHistory();
+    }
+  }, [userId, isPremium]);
 
   const loadBudgetData = async () => {
     try {
@@ -63,24 +72,26 @@ const [historyLoading, setHistoryLoading] = useState(false);
     const total = data?.reduce((sum, exp) => sum + parseFloat(exp.amount), 0) || 0;
     setSpent(total);
   };
-const loadHistory = async () => {
-  if (!isPremium) return;
 
-  setHistoryLoading(true);
+  const loadHistory = async () => {
+    if (!isPremium) return;
 
-  const { data, error } = await supabase
-    .from("expenses")
-    .select("id, amount, category, date")
-    .eq("user_id", userId)
-    .order("date", { ascending: false })
-    .limit(50);
+    setHistoryLoading(true);
 
-  if (!error && data) {
-    setHistory(data);
-  }
+    const { data, error } = await supabase
+      .from("expenses")
+      .select("id, amount, category, date")
+      .eq("user_id", userId)
+      .order("date", { ascending: false })
+      .limit(50);
 
-  setHistoryLoading(false);
-};
+    if (!error && data) {
+      setHistory(data);
+    }
+
+    setHistoryLoading(false);
+  };
+
   const handleUpdateBudget = async () => {
     await supabase
       .from('user_budgets')
@@ -101,10 +112,11 @@ const loadHistory = async () => {
   return (
     <div className="space-y-4">
       {!isPremium && (
-  <div className="mb-2 text-sm text-slate-600">
-    Free plan (Premium unlocks more features)
-  </div>
-)}
+        <div className="mb-2 text-sm text-slate-600">
+          Free plan (Premium unlocks more features)
+        </div>
+      )}
+
       <div className="bg-white rounded-3xl shadow-lg p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-slate-800">{t.dailyBudget}</h2>
@@ -152,29 +164,31 @@ const loadHistory = async () => {
             </div>
           </div>
         </div>
-{isPremium && (
-  <div className="bg-white rounded-3xl shadow-lg p-6 mt-6">
-    <h3 className="text-lg font-bold mb-4">Expense History</h3>
 
-    {historyLoading ? (
-      <p>Loading...</p>
-    ) : history.length === 0 ? (
-      <p>No expenses yet</p>
-    ) : (
-      <div className="space-y-2">
-        {history.map((item: any) => (
-          <div
-            key={item.id}
-            className="flex justify-between text-sm border-b pb-2"
-          >
-            <span>{item.date}</span>
-            <span>£{item.amount}</span>
+        {isPremium && (
+          <div className="bg-white rounded-3xl shadow-lg p-6 mt-6">
+            <h3 className="text-lg font-bold mb-4">Expense History</h3>
+
+            {historyLoading ? (
+              <p>Loading...</p>
+            ) : history.length === 0 ? (
+              <p>No expenses yet</p>
+            ) : (
+              <div className="space-y-2">
+                {history.map((item: any) => (
+                  <div
+                    key={item.id}
+                    className="flex justify-between text-sm border-b pb-2"
+                  >
+                    <span>{item.date}</span>
+                    <span>£{item.amount}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        ))}
-      </div>
-    )}
-  </div>
-)}
+        )}
+
         {isExceeded && (
           <div className="mt-6 flex items-start gap-3 bg-red-50 border-2 border-red-300 rounded-xl p-4">
             <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={24} />
