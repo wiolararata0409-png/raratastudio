@@ -168,7 +168,7 @@ function App() {
 
       <main className="max-w-md mx-auto px-4 py-8">
         <div className="space-y-6">
-          <BudgetTracker userId={user.id} language={language} />
+         <BudgetTracker userId={user.id} language={language} isPremium={isPremium} />
 
           {!isPremium && (
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-6 text-center">
