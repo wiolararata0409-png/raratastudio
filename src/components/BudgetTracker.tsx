@@ -63,7 +63,24 @@ const [historyLoading, setHistoryLoading] = useState(false);
     const total = data?.reduce((sum, exp) => sum + parseFloat(exp.amount), 0) || 0;
     setSpent(total);
   };
+const loadHistory = async () => {
+  if (!isPremium) return;
 
+  setHistoryLoading(true);
+
+  const { data, error } = await supabase
+    .from("expenses")
+    .select("id, amount, category, date")
+    .eq("user_id", userId)
+    .order("date", { ascending: false })
+    .limit(50);
+
+  if (!error && data) {
+    setHistory(data);
+  }
+
+  setHistoryLoading(false);
+};
   const handleUpdateBudget = async () => {
     await supabase
       .from('user_budgets')
