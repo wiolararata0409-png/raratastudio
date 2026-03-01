@@ -5,8 +5,8 @@ import { supabase } from '../lib/supabaseClient';
 interface BudgetTrackerProps {
   userId: string;
   language: string;
+  isPremium: boolean;
 }
-
 const translations: Record<string, Record<string, string>> = {
   en: { dailyBudget: 'Daily Budget', spent: 'Spent', remaining: 'Remaining', warning: 'Budget Limit Alert!', youveExceeded: 'You have exceeded your daily budget', setBudget: 'Set Budget Limit' },
   pl: { dailyBudget: 'Dzienny Budżet', spent: 'Wydano', remaining: 'Pozostało', warning: 'Alert!', youveExceeded: 'Przekroczyłeś budżet', setBudget: 'Ustaw limit' },
@@ -15,7 +15,7 @@ const translations: Record<string, Record<string, string>> = {
   de: { dailyBudget: 'Tagesbudget', spent: 'Ausgegeben', remaining: 'Verbleibend', warning: 'Warnung!', youveExceeded: 'Du hast dein Budget überschritten', setBudget: 'Limit setzen' }
 };
 
-export default function BudgetTracker({ userId, language }: BudgetTrackerProps) {
+export default function BudgetTracker({ userId, language, isPremium }: BudgetTrackerProps) {
   const [budget, setBudgetLimit] = useState(30);
   const [spent, setSpent] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
@@ -82,6 +82,11 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
 
   return (
     <div className="space-y-4">
+      {!isPremium && (
+  <div className="mb-2 text-sm text-slate-600">
+    Free plan (Premium unlocks more features)
+  </div>
+)}
       <div className="bg-white rounded-3xl shadow-lg p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-slate-800">{t.dailyBudget}</h2>
