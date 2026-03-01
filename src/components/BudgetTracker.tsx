@@ -21,7 +21,8 @@ export default function BudgetTracker({ userId, language, isPremium }: BudgetTra
   const [showSettings, setShowSettings] = useState(false);
   const [newBudget, setNewBudget] = useState(30);
   const [loading, setLoading] = useState(true);
-
+const [history, setHistory] = useState<any[]>([]);
+const [historyLoading, setHistoryLoading] = useState(false);
   const t = translations[language] || translations.en;
 
   useEffect(() => {
