@@ -152,7 +152,29 @@ const loadHistory = async () => {
             </div>
           </div>
         </div>
+{isPremium && (
+  <div className="bg-white rounded-3xl shadow-lg p-6 mt-6">
+    <h3 className="text-lg font-bold mb-4">Expense History</h3>
 
+    {historyLoading ? (
+      <p>Loading...</p>
+    ) : history.length === 0 ? (
+      <p>No expenses yet</p>
+    ) : (
+      <div className="space-y-2">
+        {history.map((item: any) => (
+          <div
+            key={item.id}
+            className="flex justify-between text-sm border-b pb-2"
+          >
+            <span>{item.date}</span>
+            <span>£{item.amount}</span>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
         {isExceeded && (
           <div className="mt-6 flex items-start gap-3 bg-red-50 border-2 border-red-300 rounded-xl p-4">
             <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={24} />
