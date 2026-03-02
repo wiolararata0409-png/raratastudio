@@ -134,7 +134,7 @@ type HistoryItem = {
 
 export default function BudgetTracker({ userId, language, refreshKey }: BudgetTrackerProps) {
   const [budget, setBudgetLimit] = useState(30);
-  const [budget, setBudgetLimit] = useState(30);
+  
   const [spent, setSpent] = useState(0);
 
   const [showSettings, setShowSettings] = useState(false);
