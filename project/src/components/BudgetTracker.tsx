@@ -256,10 +256,7 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  useEffect(() => {
-    if (isPremium) loadHistory();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPremium, userId]);
+ 
 
   // ✅ Auto-odświeżanie “Spent” i historii po insert/update/delete w expenses
   useEffect(() => {
