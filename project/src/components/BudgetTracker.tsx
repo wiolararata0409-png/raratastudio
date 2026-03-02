@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabaseClient";
 interface BudgetTrackerProps {
   userId: string;
   language: string;
+  refreshKey: number;
 }
 
 const translations: Record<string, Record<string, string>> = {
@@ -131,7 +132,7 @@ type HistoryItem = {
   date: string;
 };
 
-export default function BudgetTracker({ userId, language }: BudgetTrackerProps) {
+export default function BudgetTracker({ userId, language, refreshKey }: BudgetTrackerProps)
   const [budget, setBudgetLimit] = useState(30);
   const [spent, setSpent] = useState(0);
 
@@ -279,7 +280,11 @@ const maxDayTotal = Math.max(1, ...last7Days.map((d) => d.total));
   }, [userId]);
 
  
-
+useEffect(() => {
+  loadTodayExpenses();
+  if (isPremium) loadHistory();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [refreshKey]);
   // ✅ Auto-odświeżanie “Spent” i historii po insert/update/delete w expenses
   useEffect(() => {
     const channel = supabase
