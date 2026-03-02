@@ -96,6 +96,7 @@ function App() {
   const [language, setLanguage] = useState<Language>('en');
   const [showPremium, setShowPremium] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
+const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     supabase.auth.onAuthStateChange((_event, session) => {
@@ -168,7 +169,7 @@ function App() {
 
       <main className="max-w-md mx-auto px-4 py-8">
         <div className="space-y-6">
-          <BudgetTracker userId={user.id} language={language} />
+          <BudgetTracker userId={user.id} language={language} refreshKey={refreshKey} />
 
           {!isPremium && (
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-6 text-center">
@@ -183,7 +184,11 @@ function App() {
             </div>
           )}
 
-          <ExpenseForm userId={user.id} language={language} onSuccess={checkPremiumStatus} />
+          <ExpenseForm
+  userId={user.id}
+  language={language}
+  onSuccess={() => setRefreshKey((k) => k + 1)}
+/>
         </div>
       </main>
 
