@@ -132,7 +132,8 @@ type HistoryItem = {
   date: string;
 };
 
-export default function BudgetTracker({ userId, language, refreshKey }: BudgetTrackerProps)
+export default function BudgetTracker({ userId, language, refreshKey }: BudgetTrackerProps) {
+  const [budget, setBudgetLimit] = useState(30);
   const [budget, setBudgetLimit] = useState(30);
   const [spent, setSpent] = useState(0);
 
@@ -458,7 +459,7 @@ useEffect(() => {
                 {history.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm border-b pb-2">
                     <span>{item.date}</span>
-                    <span>£{item.amount}</span>
+                   <span>£{Number(item.amount).toFixed(2)}</span>
                   </div>
                 ))}
               </div>
