@@ -130,7 +130,11 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
     checkSubscription();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
-
+useEffect(() => {
+  if (isPremium) {
+    loadHistory(); 
+  }
+}, [isPremium, userId]);
   const handleCreateBudget = async (uid: string, defaultLimit = 30) => {
     const { error } = await supabase
       .from("user_budgets")
