@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertCircle, Settings } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 
@@ -27,6 +27,8 @@ const translations: Record<string, Record<string, string>> = {
     close: "Close",
     limit: "Limit",
     loading: "Loading...",
+    expenseHistory: "Expense History",
+    noExpenses: "No expenses yet",
   },
   pl: {
     dailyBudget: "Dzienny Budżet",
@@ -47,6 +49,8 @@ const translations: Record<string, Record<string, string>> = {
     close: "Zamknij",
     limit: "Limit",
     loading: "Ładowanie...",
+    expenseHistory: "Historia wydatków",
+    noExpenses: "Brak wydatków",
   },
   es: {
     dailyBudget: "Presupuesto Diario",
@@ -67,6 +71,8 @@ const translations: Record<string, Record<string, string>> = {
     close: "Cerrar",
     limit: "Límite",
     loading: "Cargando...",
+    expenseHistory: "Historial de gastos",
+    noExpenses: "Sin gastos todavía",
   },
   fr: {
     dailyBudget: "Budget Quotidien",
@@ -87,6 +93,8 @@ const translations: Record<string, Record<string, string>> = {
     close: "Fermer",
     limit: "Limite",
     loading: "Chargement...",
+    expenseHistory: "Historique des dépenses",
+    noExpenses: "Aucune dépense",
   },
   de: {
     dailyBudget: "Tagesbudget",
@@ -107,11 +115,22 @@ const translations: Record<string, Record<string, string>> = {
     close: "Schließen",
     limit: "Limit",
     loading: "Laden...",
+    expenseHistory: "Ausgabenverlauf",
+    noExpenses: "Keine Ausgaben",
   },
 };
 
-const STRIPE_MONTHLY_URL = "https://buy.stripe.com/4gM4gAg1H9mv4wi64Vf3a00"; // <- podmień na swój link
+const STRIPE_MONTHLY_URL =
+  "https://buy.stripe.com/4gM4gAg1H9mv4wi64Vf3a00"; // <- podmień na swój link
 const STRIPE_YEARLY_URL = "https://buy.stripe.com/3cI6oI8zf1U38My9h7f3a01";
+
+type HistoryItem = {
+  id: string;
+  amount: string | number;
+  category: string | null;
+  date: string;
+};
+
 export default function BudgetTracker({ userId, language }: BudgetTrackerProps) {
   const [budget, setBudgetLimit] = useState(30);
   const [spent, setSpent] = useState(0);
@@ -122,19 +141,13 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
 
   const [isPremium, setIsPremium] = useState(false);
   const [showPremium, setShowPremium] = useState(false);
- const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">("monthly");
-  const t = translations[language] || translations.en;
+  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">("monthly");
 
-  useEffect(() => {
-    loadBudgetData();
-    checkSubscription();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
-useEffect(() => {
-  if (isPremium) {
-    loadHistory(); 
-  }
-}, [isPremium, userId]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  const t = useMemo(() => translations[language] || translations.en, [language]);
+
   const handleCreateBudget = async (uid: string, defaultLimit = 30) => {
     const { error } = await supabase
       .from("user_budgets")
@@ -148,13 +161,26 @@ useEffect(() => {
   };
 
   const checkSubscription = async () => {
+    // ✅ Wariant A (jak u Ciebie w App.tsx): tabela "subscriptions" + expires_at
     const { data } = await supabase
-      .from("user_subscriptions")
-      .select("is_active")
+      .from("subscriptions")
+      .select("is_active, expires_at")
       .eq("user_id", userId)
       .maybeSingle();
 
-    setIsPremium(data?.is_active ?? false);
+    const active =
+      !!data?.is_active &&
+      (!data?.expires_at || new Date(data.expires_at) > new Date());
+
+    setIsPremium(active);
+
+    // ❗ Jeśli premium trzymasz w "user_subscriptions" (bez expires_at), zamień na:
+    // const { data } = await supabase
+    //   .from("user_subscriptions")
+    //   .select("is_active")
+    //   .eq("user_id", userId)
+    //   .maybeSingle();
+    // setIsPremium(!!data?.is_active);
   };
 
   const loadTodayExpenses = async () => {
@@ -167,9 +193,26 @@ useEffect(() => {
       .eq("date", today);
 
     const total =
-      data?.reduce((sum, exp) => sum + parseFloat(exp.amount as any), 0) || 0;
+      data?.reduce((sum, exp: any) => sum + parseFloat(exp.amount as any), 0) || 0;
 
     setSpent(total);
+  };
+
+  const loadHistory = async () => {
+    if (!isPremium) return;
+
+    setHistoryLoading(true);
+
+    const { data, error } = await supabase
+      .from("expenses")
+      .select("id, amount, category, date")
+      .eq("user_id", userId)
+      .order("date", { ascending: false })
+      .limit(50);
+
+    if (!error && data) setHistory(data as any);
+
+    setHistoryLoading(false);
   };
 
   const loadBudgetData = async () => {
@@ -207,6 +250,42 @@ useEffect(() => {
     setShowSettings(false);
   };
 
+  useEffect(() => {
+    loadBudgetData();
+    checkSubscription();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
+  useEffect(() => {
+    if (isPremium) loadHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPremium, userId]);
+
+  // ✅ Auto-odświeżanie “Spent” i historii po insert/update/delete w expenses
+  useEffect(() => {
+    const channel = supabase
+      .channel(`expenses-${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "expenses",
+          filter: `user_id=eq.${userId}`,
+        },
+        async () => {
+          await loadTodayExpenses();
+          if (isPremium) await loadHistory();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, isPremium]);
+
   const remaining = Math.max(0, budget - spent);
   const percentage = Math.min(100, (spent / budget) * 100);
   const isExceeded = spent > budget;
@@ -232,40 +311,22 @@ useEffect(() => {
         <div className="space-y-6">
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
-              <p className="text-slate-600 text-sm font-semibold mb-1">
-                {t.limit}
-              </p>
-              <p className="text-3xl font-bold text-slate-800">
-                £{budget.toFixed(2)}
-              </p>
+              <p className="text-slate-600 text-sm font-semibold mb-1">{t.limit}</p>
+              <p className="text-3xl font-bold text-slate-800">£{budget.toFixed(2)}</p>
             </div>
 
             <div className="text-center">
-              <p
-                className={`text-sm font-semibold mb-1 ${
-                  isExceeded ? "text-red-600" : "text-slate-600"
-                }`}
-              >
+              <p className={`text-sm font-semibold mb-1 ${isExceeded ? "text-red-600" : "text-slate-600"}`}>
                 {t.spent}
               </p>
-              <p
-                className={`text-3xl font-bold ${
-                  isExceeded ? "text-red-600" : "text-slate-800"
-                }`}
-              >
+              <p className={`text-3xl font-bold ${isExceeded ? "text-red-600" : "text-slate-800"}`}>
                 £{spent.toFixed(2)}
               </p>
             </div>
 
             <div className="text-center">
-              <p className="text-slate-600 text-sm font-semibold mb-1">
-                {t.remaining}
-              </p>
-              <p
-                className={`text-3xl font-bold ${
-                  isExceeded ? "text-red-600" : "text-green-600"
-                }`}
-              >
+              <p className="text-slate-600 text-sm font-semibold mb-1">{t.remaining}</p>
+              <p className={`text-3xl font-bold ${isExceeded ? "text-red-600" : "text-green-600"}`}>
                 £{remaining.toFixed(2)}
               </p>
             </div>
@@ -273,19 +334,13 @@ useEffect(() => {
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-slate-600 font-semibold">
-                {Math.round(percentage)}%
-              </p>
+              <p className="text-slate-600 font-semibold">{Math.round(percentage)}%</p>
             </div>
 
             <div className="w-full bg-slate-200 rounded-full h-3">
               <div
                 className={`h-3 rounded-full transition-all duration-300 ${
-                  isExceeded
-                    ? "bg-red-500"
-                    : percentage > 75
-                    ? "bg-yellow-500"
-                    : "bg-green-500"
+                  isExceeded ? "bg-red-500" : percentage > 75 ? "bg-yellow-500" : "bg-green-500"
                 }`}
                 style={{ width: `${Math.min(100, percentage)}%` }}
               />
@@ -295,10 +350,7 @@ useEffect(() => {
 
         {isExceeded && (
           <div className="mt-6 flex items-start gap-3 bg-red-50 border-2 border-red-300 rounded-xl p-4">
-            <AlertCircle
-              className="text-red-600 flex-shrink-0 mt-0.5"
-              size={24}
-            />
+            <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={24} />
             <div>
               <p className="font-bold text-red-700 text-lg">{t.warning}</p>
               <p className="text-red-600 text-sm">{t.youveExceeded}</p>
@@ -311,9 +363,7 @@ useEffect(() => {
       {showSettings && (
         <div className="fixed inset-0 bg-black/50 flex items-end z-50">
           <div className="bg-white w-full rounded-t-3xl p-6 animate-in slide-in-from-bottom">
-            <h3 className="text-2xl font-bold text-slate-800 mb-4">
-              {t.setBudget}
-            </h3>
+            <h3 className="text-2xl font-bold text-slate-800 mb-4">{t.setBudget}</h3>
             <div className="space-y-4">
               <input
                 type="number"
@@ -347,9 +397,23 @@ useEffect(() => {
         <h3 className="text-lg font-semibold mb-2">{t.statistics}</h3>
 
         {isPremium ? (
-          <div className="p-4 rounded-xl bg-white shadow">
-            <p>Total spent today: £{spent.toFixed(2)}</p>
-            <p>Remaining: £{Math.max(0, budget - spent).toFixed(2)}</p>
+          <div className="bg-white rounded-3xl shadow-lg p-6">
+            <h3 className="text-lg font-bold mb-4">{t.expenseHistory}</h3>
+
+            {historyLoading ? (
+              <p>{t.loading}</p>
+            ) : history.length === 0 ? (
+              <p>{t.noExpenses}</p>
+            ) : (
+              <div className="space-y-2">
+                {history.map((item) => (
+                  <div key={item.id} className="flex justify-between text-sm border-b pb-2">
+                    <span>{item.date}</span>
+                    <span>£{item.amount}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <>
@@ -367,7 +431,6 @@ useEffect(() => {
                 <div className="bg-white w-full rounded-t-3xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-bold">{t.premium}</h3>
-
                     <button
                       onClick={() => setShowPremium(false)}
                       className="px-3 py-1 rounded-lg border"
@@ -377,26 +440,27 @@ useEffect(() => {
                   </div>
 
                   <p className="text-slate-700">{t.premiumDesc}</p>
-                
-                  <div className="flex gap-4 mt-4">
-  <button
-    onClick={() => setSelectedPlan("monthly")}
-    className={`px-4 py-2 rounded ${
-      selectedPlan === "monthly" ? "bg-blue-600 text-white" : "bg-gray-200"
-    }`}
-  >
-    Monthly
-  </button>
 
-  <button
-    onClick={() => setSelectedPlan("yearly")}
-    className={`px-4 py-2 rounded ${
-      selectedPlan === "yearly" ? "bg-blue-600 text-white" : "bg-gray-200"
-    }`}
-  >
-    Yearly
-  </button>
-</div>
+                  <div className="flex gap-4 mt-4">
+                    <button
+                      onClick={() => setSelectedPlan("monthly")}
+                      className={`px-4 py-2 rounded ${
+                        selectedPlan === "monthly" ? "bg-blue-600 text-white" : "bg-gray-200"
+                      }`}
+                    >
+                      Monthly
+                    </button>
+
+                    <button
+                      onClick={() => setSelectedPlan("yearly")}
+                      className={`px-4 py-2 rounded ${
+                        selectedPlan === "yearly" ? "bg-blue-600 text-white" : "bg-gray-200"
+                      }`}
+                    >
+                      Yearly
+                    </button>
+                  </div>
+
                   <a
                     href={selectedPlan === "monthly" ? STRIPE_MONTHLY_URL : STRIPE_YEARLY_URL}
                     target="_blank"
@@ -405,8 +469,6 @@ useEffect(() => {
                   >
                     {t.buyPremium}
                   </a>
-
-                
                 </div>
               </div>
             )}
