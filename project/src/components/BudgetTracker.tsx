@@ -169,7 +169,7 @@ const last7Days = (() => {
   return days;
 })();
 
-const maxDayTotal = Math.max(1, ...last7Days.map((d) => d.total));
+const maxDayTotal = Math.max(1, budget, ...last7Days.map((d) => d.total));
   const t = useMemo(() => translations[language] || translations.en, [language]);
 
   const handleCreateBudget = async (uid: string, defaultLimit = 30) => {
@@ -437,8 +437,8 @@ useEffect(() => {
         <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
           <div className="w-full bg-slate-100 rounded-lg overflow-hidden h-20 flex items-end">
             <div
-              className="w-full bg-blue-600"
-              style={{ height: `${h}%` }}
+              className="w-full bg-blue-600 transition-all duration-500"
+style={{ height: `${h}%` }}
               title={`${d.date}: £${d.total.toFixed(2)}`}
             />
           </div>
