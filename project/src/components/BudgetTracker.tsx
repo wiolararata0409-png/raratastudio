@@ -145,7 +145,29 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
 
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+const last7Days = (() => {
+  // history: [{ date: "YYYY-MM-DD", amount: ... }]
+  const map = new Map<string, number>();
 
+  for (const item of history) {
+    const d = (item as any).date;
+    const a = Number((item as any).amount || 0);
+    if (!d) continue;
+    map.set(d, (map.get(d) || 0) + a);
+  }
+
+  const days: { date: string; total: number }[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const dt = new Date();
+    dt.setDate(dt.getDate() - i);
+    const key = dt.toISOString().split("T")[0];
+    days.push({ date: key, total: map.get(key) || 0 });
+  }
+
+  return days;
+})();
+
+const maxDayTotal = Math.max(1, ...last7Days.map((d) => d.total));
   const t = useMemo(() => translations[language] || translations.en, [language]);
 
   const handleCreateBudget = async (uid: string, defaultLimit = 30) => {
@@ -396,7 +418,32 @@ export default function BudgetTracker({ userId, language }: BudgetTrackerProps) 
         {isPremium ? (
           <div className="bg-white rounded-3xl shadow-lg p-6">
             <h3 className="text-lg font-bold mb-4">{t.expenseHistory}</h3>
+      {/* WOW: 7-day mini chart */}
+<div className="mb-4">
+  <div className="text-sm font-semibold text-slate-700 mb-2">
+    Last 7 days
+  </div>
 
+  <div className="flex items-end gap-2 h-24">
+    {last7Days.map((d) => {
+      const h = Math.round((d.total / maxDayTotal) * 100);
+      return (
+        <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
+          <div className="w-full bg-slate-100 rounded-lg overflow-hidden h-20 flex items-end">
+            <div
+              className="w-full bg-blue-600"
+              style={{ height: `${h}%` }}
+              title={`${d.date}: £${d.total.toFixed(2)}`}
+            />
+          </div>
+          <div className="text-[10px] text-slate-500">
+            {d.date.slice(5)}
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</div>
             {historyLoading ? (
               <p>{t.loading}</p>
             ) : history.length === 0 ? (
