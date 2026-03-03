@@ -122,8 +122,8 @@ const translations: Record<string, Record<string, string>> = {
 };
 
 const STRIPE_MONTHLY_URL =
-  "https://buy.stripe.com/4gM4gAg1H9mv4wi64Vf3a00"; // <- podmień na swój link
-const STRIPE_YEARLY_URL = "https://buy.stripe.com/3cI6oI8zf1U38My9h7f3a01";
+ "/.netlify/functions/create-portal-session?plan=monthly"; // <- podmień na swój link
+const STRIPE_YEARLY_URL = "/.netlify/functions/create-portal-session?plan=yearly";
 
 type HistoryItem = {
   id: string;
@@ -510,16 +510,15 @@ style={{ height: `${h}%` }}
                       Yearly
                     </button>
                   </div>
-
-                  <a
-                    href={selectedPlan === "monthly" ? STRIPE_MONTHLY_URL : STRIPE_YEARLY_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 w-full block text-center py-3 bg-blue-600 text-white rounded-xl font-semibold"
-                  >
-                    {t.buyPremium}
-                  </a>
-                </div>
+<a
+  href={`${selectedPlan === "monthly" ? STRIPE_MONTHLY_URL : STRIPE_YEARLY_URL}&user_id=${encodeURIComponent(
+    userId
+  )}`}
+  className="mt-4 w-full block text-center py-3 bg-blue-600 text-white rounded-xl font-semibold"
+>
+  {t.buyPremium}
+</a>
+            </div>
               </div>
             )}
           </>
