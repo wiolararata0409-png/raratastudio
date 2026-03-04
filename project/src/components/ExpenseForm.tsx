@@ -16,7 +16,13 @@ const translations: Record<string, Record<string, string>> = {
   de: { addExpense: 'Ausgabe hinzufügen', amount: 'Betrag (£)', category: 'Kategorie', description: 'Beschreibung', notes: 'Notizen (optional)', today: 'Heutige Ausgaben', empty: 'Keine Ausgaben', add: 'Hinzufügen', delete: 'Löschen', receipt: 'Belegfoto', addPhoto: 'Foto hinzufügen', remove: 'Entfernen', viewReceipt: 'Beleg ansehen' }
 };
 
-const categories = ['Food', 'Transport', 'Entertainment', 'Shopping', 'Utilities', 'Other'];
+const categories: Record<string, string[]> = {
+  en: ['Food','Transport','Entertainment','Shopping','Utilities','Other'],
+  pl: ['Jedzenie','Transport','Rozrywka','Zakupy','Rachunki','Inne'],
+  es: ['Comida','Transporte','Entretenimiento','Compras','Servicios','Otros'],
+  fr: ['Nourriture','Transport','Divertissement','Achats','Factures','Autres'],
+  de: ['Essen','Transport','Unterhaltung','Einkaufen','Rechnungen','Andere']
+};
 
 interface Expense {
   id: string;
@@ -175,7 +181,7 @@ export default function ExpenseForm({ userId, language, onSuccess }: ExpenseForm
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-lg"
-              placeholder="What did you buy?"
+             placeholder={t.description}
             />
           </div>
 
