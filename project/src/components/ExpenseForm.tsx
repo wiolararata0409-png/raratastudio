@@ -168,9 +168,10 @@ export default function ExpenseForm({ userId, language, onSuccess }: ExpenseForm
               onChange={(e) => setCategory(e.target.value)}
               className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-lg"
             >
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
+              {categories[language].map(cat => (
+  <option key={cat} value={cat}>{cat}</option>
+))}
+ 
             </select>
           </div>
 
