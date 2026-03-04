@@ -30,6 +30,7 @@ const translations: Record<string, Record<string, string>> = {
     loading: "Loading...",
     expenseHistory: "Expense History",
     noExpenses: "No expenses yet",
+    last7days: "Last 7 days",
   },
   pl: {
     dailyBudget: "Dzienny Budżet",
@@ -52,6 +53,7 @@ const translations: Record<string, Record<string, string>> = {
     loading: "Ładowanie...",
     expenseHistory: "Historia wydatków",
     noExpenses: "Brak wydatków",
+    last7days: "Ostatnie 7 dni",
   },
   es: {
     dailyBudget: "Presupuesto Diario",
@@ -74,6 +76,7 @@ const translations: Record<string, Record<string, string>> = {
     loading: "Cargando...",
     expenseHistory: "Historial de gastos",
     noExpenses: "Sin gastos todavía",
+    last7days: "Últimos 7 días",
   },
   fr: {
     dailyBudget: "Budget Quotidien",
@@ -96,6 +99,7 @@ const translations: Record<string, Record<string, string>> = {
     loading: "Chargement...",
     expenseHistory: "Historique des dépenses",
     noExpenses: "Aucune dépense",
+    last7days: "7 derniers jours",
   },
   de: {
     dailyBudget: "Tagesbudget",
@@ -118,6 +122,7 @@ const translations: Record<string, Record<string, string>> = {
     loading: "Laden...",
     expenseHistory: "Ausgabenverlauf",
     noExpenses: "Keine Ausgaben",
+  last7days: "Letzte 7 Tage",
   },
 };
 
@@ -427,7 +432,7 @@ useEffect(() => {
       {/* WOW: 7-day mini chart */}
 <div className="mb-4">
   <div className="text-sm font-semibold text-slate-700 mb-2">
-    Last 7 days
+  {t.last7days}
   </div>
 
   <div className="flex items-end gap-2 h-24">
