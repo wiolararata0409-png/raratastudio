@@ -41,7 +41,12 @@ const translations: Record<string, any> = {
   },
 };
 
-const features = ["feature1", "feature2", "feature3", "feature4"];
+const features = [
+ "Expense history",
+ "7 day spending chart",
+ "Receipt photo storage",
+ "Unlimited tracking"
+];
 
 export default function PremiumModal({
   isOpen,
