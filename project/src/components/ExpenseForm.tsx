@@ -303,8 +303,7 @@ const formatMoney = (value: number, language: string) => {
               <X size={24} />
             </button>
             <img
-              src={selectedImage}
-              alt="Receipt"
+              src={selectedImage}              alt="Receipt"
               className="max-w-full max-h-[90vh] object-contain rounded-xl"
               onClick={(e) => e.stopPropagation()}
             />
