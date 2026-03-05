@@ -356,7 +356,7 @@ useEffect(() => {
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
               <p className="text-slate-600 text-sm font-semibold mb-1">{t.limit}</p>
-              <p className="text-3xl font-bold text-slate-800">£{budget.toFixed(2)}</p>
+              <p className="text-3xl font-bold text-slate-800">{formatMoney(budget, language)}</p>
             </div>
 
             <div className="text-center">
@@ -364,14 +364,14 @@ useEffect(() => {
                 {t.spent}
               </p>
               <p className={`text-3xl font-bold ${isExceeded ? "text-red-600" : "text-slate-800"}`}>
-                £{spent.toFixed(2)}
+                {formatMoney(spent, language)}
               </p>
             </div>
 
             <div className="text-center">
               <p className="text-slate-600 text-sm font-semibold mb-1">{t.remaining}</p>
               <p className={`text-3xl font-bold ${isExceeded ? "text-red-600" : "text-green-600"}`}>
-                £{remaining.toFixed(2)}
+                {formatMoney(remaining, language)}
               </p>
             </div>
           </div>
