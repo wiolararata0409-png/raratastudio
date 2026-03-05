@@ -7,7 +7,21 @@ interface BudgetTrackerProps {
   language: string;
   refreshKey: number;
 }
+// ✅ currency by language
+const currencyByLang: Record<string, { code: string; locale: string }> = {
+  pl: { code: "PLN", locale: "pl-PL" },
+  en: { code: "GBP", locale: "en-GB" },
+  es: { code: "EUR", locale: "es-ES" },
+  fr: { code: "EUR", locale: "fr-FR" },
+  de: { code: "EUR", locale: "de-DE" },
+};
 
+const getCurrency = (language: string) => currencyByLang[language] || currencyByLang.en;
+
+const formatMoney = (value: number, language: string) => {
+  const { code, locale } = getCurrency(language);
+  return new Intl.NumberFormat(locale, { style: "currency", currency: code }).format(value);
+};
 const translations: Record<string, Record<string, string>> = {
   en: {
     dailyBudget: "Daily Budget",
