@@ -458,7 +458,7 @@ useEffect(() => {
             <div
               className="w-full bg-blue-600 transition-all duration-500"
 style={{ height: `${h}%` }}
-              title={`${d.date}: £${d.total.toFixed(2)}`}
+             title={`${d.date}: ${formatMoney(d.total, language)}`}
             />
           </div>
           <div className="text-[10px] text-slate-500">
@@ -478,7 +478,7 @@ style={{ height: `${h}%` }}
                 {history.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm border-b pb-2">
                     <span>{item.date}</span>
-                   <span>£{Number(item.amount).toFixed(2)}</span>
+                  <span>{formatMoney(Number(item.amount), language)}</span>
                   </div>
                 ))}
               </div>
