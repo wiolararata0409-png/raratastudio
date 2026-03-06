@@ -271,7 +271,7 @@ const formatMoney = (value: number, language: string) => {
                   )}
                 </div>
                 <div className="flex items-center gap-3">
-                  <p className="text-lg font-bold text-slate-800">£{exp.amount.toFixed(2)}</p>
+                 <p className="text-lg font-bold text-slate-800">{formatMoney(exp.amount, language)}</p>
                   <button
                     onClick={() => handleDeleteExpense(exp.id)}
                     className="p-2 hover:bg-red-100 rounded-lg transition text-red-600"
@@ -284,7 +284,7 @@ const formatMoney = (value: number, language: string) => {
 
             <div className="mt-4 pt-4 border-t-2 border-slate-200 flex justify-between items-center">
               <p className="font-bold text-slate-700">Total:</p>
-              <p className="text-2xl font-bold text-slate-800">£{total.toFixed(2)}</p>
+             <p className="text-2xl font-bold text-slate-800">{formatMoney(total, language)}</p>
             </div>
           </div>
         )}
