@@ -200,9 +200,22 @@ const [refreshKey, setRefreshKey] = useState(0);
           language={language}
           userId={user.id}
         />
-      )}
-    </div>
-  );
+)}
+
+<footer style={{
+  textAlign: "center",
+  marginTop: "40px",
+  padding: "20px",
+  fontSize: "14px",
+  color: "#94a3b8"
+}}>
+  <a href="/privacy-policy.html" target="_blank">Privacy Policy</a>
+  {" | "}
+  <a href="/terms.html" target="_blank">Terms of Service</a>
+</footer>
+
+</div>
+);
 }
 
 export default App;
