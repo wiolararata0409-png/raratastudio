@@ -15,7 +15,7 @@ function PrivacyPolicyPage() {
       <p>This app collects basic account data, expense records, notes, and receipt images to provide the service.</p>
       <p>Payments are securely processed by Stripe. We do not store full card details.</p>
       <p>Data may be processed by trusted providers such as Supabase, Stripe, and Netlify.</p>
-      <p>If you want to access, correct, or delete your data, contact us at: YOUR_EMAIL_HERE</p>
+      <p>If you want to access, correct, or delete your data, contact us at: info@raratastudio.com</p>
     </div>
   );
 }
