@@ -1,7 +1,16 @@
 [build]
-  base = "project"
-  command = "npm run build"
-  publish = "dist"
+  command = "cd project && npm run build"
+  publish = "project/dist"
+
+[[redirects]]
+  from = "/privacy-policy.html"
+  to = "/privacy-policy.html"
+  status = 200
+
+[[redirects]]
+  from = "/terms.html"
+  to = "/terms.html"
+  status = 200
 
 [[redirects]]
   from = "/*"
