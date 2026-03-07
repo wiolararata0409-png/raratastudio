@@ -5,9 +5,32 @@ import BudgetTracker from './components/BudgetTracker';
 import ExpenseForm from './components/ExpenseForm';
 import PremiumModal from './components/PremiumModal';
 import { supabase } from './lib/supabaseClient';
-
+const path = window.location.pathname;
 type Language = 'en' | 'pl' | 'es' | 'fr' | 'de';
+function PrivacyPolicyPage() {
+  return (
+    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "40px 20px", lineHeight: 1.6 }}>
+      <h1>Privacy Policy</h1>
+      <p>Last updated: 7 March 2026</p>
+      <p>This app collects basic account data, expense records, notes, and receipt images to provide the service.</p>
+      <p>Payments are securely processed by Stripe. We do not store full card details.</p>
+      <p>Data may be processed by trusted providers such as Supabase, Stripe, and Netlify.</p>
+      <p>If you want to access, correct, or delete your data, contact us at: YOUR_EMAIL_HERE</p>
+    </div>
+  );
+}
 
+function TermsPage() {
+  return (
+    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "40px 20px", lineHeight: 1.6 }}>
+      <h1>Terms of Service</h1>
+      <p>By using Budget Tracker, you agree to use the service responsibly.</p>
+      <p>The app helps users track personal budgets and expenses.</p>
+      <p>Premium features may require a paid subscription processed by Stripe.</p>
+      <p>We may update these terms from time to time.</p>
+    </div>
+  );
+}
 const translations: Record<Language, Record<string, string>> = {
   en: {
     title: 'Budget Tracker',
@@ -92,6 +115,8 @@ const translations: Record<Language, Record<string, string>> = {
 };
 
 function App() {
+  if (path === "/privacy-policy") return <PrivacyPolicyPage />;
+if (path === "/terms") return <TermsPage />;
   const [user, setUser] = useState<any>(null);
   const [language, setLanguage] = useState<Language>('en');
   const [showPremium, setShowPremium] = useState(false);
