@@ -122,40 +122,43 @@ const formatMoney = (value: number, language: string) => {
 
     return data.publicUrl;
   };
+const handleAddExpense = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!amount) return;
 
-  const handleAddExpense = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!amount) return;
-if (!isPremium && expenses.length >= freeLimit)
+  if (!isPremium && expenses.length >= freeLimit) {
   setShowPremium(true);
   return;
 }
-    setLoading(true);
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const receiptUrl = await uploadReceiptImage();
 
-      await supabase.from('expenses').insert([
-        {
-          user_id: userId,
-          amount: parseFloat(amount),
-          category,
-          description,
-          date: today,
-          receipt_image_url: receiptUrl
-        }
-      ]);
+  setLoading(true);
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const receiptUrl = await uploadReceiptImage();
 
-      setAmount('');
-      setDescription('');
-      setCategory('Food');
-      removeReceiptImage();
-      await loadExpenses();
-      onSuccess?.();
-    } finally {
-      setLoading(false);
-    }
-  };
+    await supabase.from('expenses').insert([
+      {
+        user_id: userId,
+        amount: parseFloat(amount),
+        category,
+        description,
+        date: today,
+        receipt_image_url: receiptUrl
+      }
+    ]);
+
+    setAmount('');
+    setCategory('Food');
+    setDescription('');
+    setReceiptImage(null);
+    setReceiptPreview(null);
+    onSuccess?.();
+  } catch (error) {
+    console.error('Error adding expense:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleDeleteExpense = async (id: string) => {
     await supabase.from('expenses').delete().eq('id', id);
