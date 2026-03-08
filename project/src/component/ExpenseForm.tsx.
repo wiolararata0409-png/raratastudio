@@ -6,6 +6,9 @@ interface ExpenseFormProps {
   userId: string;
   language: string;
   onSuccess?: () => void;
+  isPremium: boolean;
+  setShowPremium: (value: boolean) => void;
+  freeLimit: number;
 }
 
 const translations: Record<string, Record<string, string>> = {
@@ -31,8 +34,14 @@ interface Expense {
   description: string;
   receipt_image_url?: string;
 }
-
-export default function ExpenseForm({ userId, language, onSuccess }: ExpenseFormProps) {
+export default function ExpenseForm({
+  userId,
+  language,
+  onSuccess,
+  isPremium,
+  setShowPremium,
+  freeLimit
+}: ExpenseFormProps) {
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Food');
   const [description, setDescription] = useState('');
@@ -116,7 +125,10 @@ const formatMoney = (value: number, language: string) => {
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount) return;
-
+if (!isPremium && expenses.length >= FREE_LIMIT) {
+  setShowPremium(true);
+  return;
+}
     setLoading(true);
     try {
       const today = new Date().toISOString().split('T')[0];
