@@ -209,10 +209,13 @@ const FREE_LIMIT = 50;
             </div>
           )}
 
-          <ExpenseForm
+<ExpenseForm
   userId={user.id}
   language={language}
   onSuccess={() => setRefreshKey((k) => k + 1)}
+  isPremium={isPremium}
+  setShowPremium={setShowPremium}
+  freeLimit={FREE_LIMIT}
 />
         </div>
       </main>
