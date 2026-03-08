@@ -113,7 +113,18 @@ const translations: Record<Language, Record<string, string>> = {
     yearlyPlan: 'Jährlich - £26.99'
   }
 };
-
+function TermsPage() {
+  return (
+    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "40px 20px", lineHeight: 1.6 }}>
+      <h1>Terms of Service</h1>
+      <p>Last updated: 7 March 2026</p>
+      <p>By using Budget Tracker, you agree to use the service responsibly.</p>
+      <p>The app helps users track personal budgets and expenses.</p>
+      <p>Premium features may require a paid subscription processed by Stripe.</p>
+      <p>We may update these terms from time to time.</p>
+    </div>
+  );
+}
 function App() {
   if (path === "/privacy-policy") return <PrivacyPolicyPage />;
 if (path === "/terms") return <TermsPage />;
