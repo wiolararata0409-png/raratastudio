@@ -122,7 +122,7 @@ if (path === "/terms") return <TermsPage />;
   const [showPremium, setShowPremium] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
 const [refreshKey, setRefreshKey] = useState(0);
-
+const FREE_LIMIT = 50;
   useEffect(() => {
     supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null);
