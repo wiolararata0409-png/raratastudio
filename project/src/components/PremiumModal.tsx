@@ -42,10 +42,11 @@ const translations: Record<string, any> = {
 };
 
 const features = [
- "Expense history",
- "7 day spending chart",
- "Receipt photo storage",
- "Unlimited tracking"
+  "Unlimited expenses",
+  "Full expense history",
+  "7-day spending chart",
+  "Receipt photo storage",
+  "Better budget insights"
 ];
 
 export default function PremiumModal({
@@ -230,7 +231,7 @@ export default function PremiumModal({
             {/* MONTHLY */}
             <div className="border-2 border-slate-200 rounded-2xl p-6">
               <h3 className="text-lg font-bold text-slate-800 mb-1">
-                Monthly - £2.99
+               Monthly plan - £2.99 per month
               </h3>
 
               <button
@@ -249,7 +250,7 @@ export default function PremiumModal({
               </div>
 
               <h3 className="text-lg font-bold text-slate-800 mb-1">
-                Yearly - £26.99
+               Yearly plan - £26.99 per year
               </h3>
               <p className="text-sm text-slate-600 mb-3">{t.saveUpTo}</p>
 
