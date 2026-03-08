@@ -125,7 +125,7 @@ const formatMoney = (value: number, language: string) => {
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount) return;
-if (!isPremium && expenses.length >= FREE_LIMIT) {
+if (!isPremium && expenses.length >= freeLimit)
   setShowPremium(true);
   return;
 }
