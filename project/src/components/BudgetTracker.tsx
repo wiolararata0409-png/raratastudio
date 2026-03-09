@@ -163,7 +163,19 @@ export default function BudgetTracker({ userId, language, refreshKey }: BudgetTr
   const [isPremium, setIsPremium] = useState(false);
   const [showPremium, setShowPremium] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">("monthly");
+const exportCSV = () => {
+  const csvContent =
+    "Date,Category,Amount\n" +
+    history.map(item => `${item.date},${item.category},${item.amount}`).join("\n");
 
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "expenses.csv";
+  link.click();
+};
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
 const last7Days = (() => {
@@ -443,6 +455,12 @@ useEffect(() => {
         {isPremium ? (
           <div className="bg-white rounded-3xl shadow-lg p-6">
             <h3 className="text-lg font-bold mb-4">{t.expenseHistory}</h3>
+            <button
+  onClick={exportCSV}
+  className="mb-4 px-4 py-2 bg-green-600 text-white rounded-xl"
+>
+  Export CSV
+</button>
       {/* WOW: 7-day mini chart */}
 <div className="mb-4">
   <div className="text-sm font-semibold text-slate-700 mb-2">
