@@ -238,9 +238,9 @@ const FREE_LIMIT = 50;
   fontSize: "14px",
   color: "#94a3b8"
 }}>
-  <a href="/privacy-policy.html" target="_blank">Privacy Policy</a>
+ <a href="/privacy-policy">Privacy Policy</a>
   {" | "}
-  <a href="/terms.html" target="_blank">Terms of Service</a>
+  <a href="/terms">Terms of Service</a>
 </footer>
 
 </div>
