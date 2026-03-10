@@ -165,10 +165,13 @@ const FREE_LIMIT = 50;
         Budget Tracker
       </h1>
 
-      <p className="text-lg text-slate-600 mb-8 max-w-xl">
-        Track your daily expenses in seconds. Simple and minimal budget tracker.
+      <p className="text-lg text-slate-600 mb-3 max-w-xl">
+        Track your daily expenses in seconds.
+Simple budget tracker for everyday spending.
       </p>
-
+<p className="text-sm text-slate-500 mb-8">
+  Free plan available. Premium unlocks statistics.
+</p>
       <div className="flex gap-4 mb-10">
         <a
           href="/login"
