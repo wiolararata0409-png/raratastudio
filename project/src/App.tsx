@@ -154,9 +154,46 @@ const FREE_LIMIT = 50;
 
   const t = translations[language];
 
-  if (!user) {
+ if (!user) {
+  if (path === "/login") {
     return <Auth />;
   }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col items-center justify-center px-6 text-center">
+      <h1 className="text-4xl font-bold text-slate-800 mb-4">
+        Budget Tracker
+      </h1>
+
+      <p className="text-lg text-slate-600 mb-8 max-w-xl">
+        Track your daily expenses in seconds. Simple and minimal budget tracker.
+      </p>
+
+      <div className="flex gap-4 mb-10">
+        <a
+          href="/login"
+          className="px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700"
+        >
+          Start tracking
+        </a>
+
+        <a
+          href="/login"
+          className="px-6 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 font-semibold hover:bg-slate-50"
+        >
+          Login
+        </a>
+      </div>
+
+      <div className="grid gap-3 text-slate-700 max-w-md">
+        <div>✓ Quick expense logging</div>
+        <div>✓ Spending statistics</div>
+        <div>✓ CSV export</div>
+        <div>✓ Multiple currencies</div>
+      </div>
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
