@@ -175,7 +175,7 @@ Simple budget tracker for everyday spending.
       <div className="flex gap-4 mb-10">
         <a
           href="/login"
-          className="px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700"
+         className="px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold shadow-lg hover:scale-105 transition"
         >
           Start tracking
         </a>
