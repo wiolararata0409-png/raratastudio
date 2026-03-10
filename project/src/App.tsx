@@ -161,7 +161,7 @@ const FREE_LIMIT = 50;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col items-center justify-center px-6 text-center">
-      <h1 className="text-4xl font-bold text-slate-800 mb-4">
+     <h1 className="text-5xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
         Budget Tracker
       </h1>
 
