@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { LogOut, Crown } from 'lucide-react';
+import { PiggyBank, Logout } from 'lucide-react'
 import Auth from './components/Auth';
 import BudgetTracker from './components/BudgetTracker';
 import ExpenseForm from './components/ExpenseForm';
@@ -220,7 +220,7 @@ Simple budget tracker for everyday spending.
               className="p-2 hover:bg-slate-100 rounded-lg transition"
               title={t.premium}
             >
-              <Crown className={isPremium ? 'text-yellow-500' : 'text-slate-400'} size={20} />
+             <PiggyBank className={isPremium ? 'text-yellow-500' : 'text-slate-400'} size={20} />
             </button>
             <button
               onClick={handleLogout}
@@ -239,7 +239,7 @@ Simple budget tracker for everyday spending.
 
           {!isPremium && (
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-6 text-center">
-              <Crown className="w-12 h-12 text-blue-600 mx-auto mb-3" />
+              <PiggyBank className="w-12 h-12 text-blue-600 mx-auto mb-3" />
               <p className="text-slate-700 font-semibold mb-3">{t.setPremium}</p>
               <button
                 onClick={() => setShowPremium(true)}
