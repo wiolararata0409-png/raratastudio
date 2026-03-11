@@ -14,11 +14,15 @@ function PrivacyPolicyPage() {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px', lineHeight: 1.6 }}>
       <h1>Privacy Policy</h1>
-      <p>Last updated: 7 March 2026</p>
-      <p>This app collects basic account data, expense records, notes, and receipt images to provide the service.</p>
-      <p>Payments are securely processed by Stripe. We do not store full card details.</p>
-      <p>Data may be processed by trusted providers such as Supabase, Stripe, and Netlify.</p>
-      <p>If you want to access, correct, or delete your data, contact us at: info@raratastudio.com</p>
+      <p><strong>Last updated:</strong> 7 March 2026</p>
+     <h2>Information We Collect</h2>
+<p>This app collects basic account data, expense records, notes, and receipt images to provide the service.</p>
+      <h2>Payments</h2>
+<p>Payments are securely processed by Stripe. We do not store full card details.</p>
+      <h2>Third-Party Services</h2>
+<p>Data may be processed by trusted providers such as Supabase, Stripe, and Netlify.</p>
+     <h2>Contact</h2>
+<p>If you want to access, correct, or delete your data, contact us at: info@raratastudio.com</p>
     </div>
   );
 }
@@ -27,11 +31,15 @@ function TermsPage() {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px', lineHeight: 1.6 }}>
       <h1>Terms of Service</h1>
-      <p>Last updated: 7 March 2026</p>
-      <p>By using Budget Tracker, you agree to use the service responsibly.</p>
-      <p>The app helps users track personal budgets and expenses.</p>
-      <p>Premium features may require a paid subscription processed by Stripe.</p>
-      <p>We may update these terms from time to time.</p>
+     <p><strong>Last updated:</strong> 7 March 2026</p>
+     <h2>Agreement</h2>
+<p>By using Budget Tracker, you agree to use the service responsibly.</p>
+      <h2>Description of Service</h2>
+<p>The app helps users track personal budgets and expenses.</p>
+     <h2>Payments</h2>
+<p>Premium features may require a paid subscription processed by Stripe.</p>
+     <h2>Changes</h2>
+<p>We may update these terms from time to time.</p>
     </div>
   );
 }
