@@ -1,8 +1,18 @@
 [build]
-  command = "npm run build"
-  publish = "dist"
+command = "npm run build"
+publish = "dist"
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+from = "/sitemap.xml"
+to = "/sitemap.xml"
+status = 200
+
+[[redirects]]
+from = "/google268f84b5c91c65b5.html"
+to = "/google268f84b5c91c65b5.html"
+status = 200
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
