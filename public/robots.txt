@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://raratastudio.com/sitemap.xml
