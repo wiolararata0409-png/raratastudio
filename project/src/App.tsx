@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { PiggyBank, Crown, LogOut } from 'lucide-react';
-import Auth from './components/Auth';
-import BudgetTracker from './components/BudgetTracker';
-import ExpenseForm from './components/ExpenseForm';
-import PremiumModal from './components/PremiumModal';
+const Auth = lazy(() => import('./components/Auth')); 
+const BudgetTracker = lazy(() => import('./components/BudgetTracker')); 
+const ExpenseForm = lazy(() => import('./components/ExpenseForm')); 
+const PremiumModal = lazy(() => import('./components/PremiumModal'));
 import { supabase } from './lib/supabaseClient';
 
 const path = window.location.pathname;
@@ -183,8 +183,11 @@ function App() {
 
   if (!user) {
     if (path === '/login') {
-      return <Auth />;
-    }
+   return (
+  <Suspense fallback={<div className="p-6 text-center">Loading...</div>}>
+    <Auth />
+  </Suspense>
+);
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 flex flex-col items-center justify-center px-6 text-center">
@@ -272,7 +275,9 @@ function App() {
 
       <main className="max-w-md mx-auto px-4 py-8">
         <div className="space-y-6">
-          <BudgetTracker userId={user.id} language={language} refreshKey={refreshKey} />
+          <Suspense fallback={<div className="p-6 text-center">Loading...</div>}>
+  <BudgetTracker userId={user.id} language={language} refreshKey={refreshKey} />
+</Suspense>
 
           {!isPremium && (
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-6 text-center">
@@ -287,14 +292,16 @@ function App() {
             </div>
           )}
 
-          <ExpenseForm
-            userId={user.id}
-            language={language}
-            onSuccess={() => setRefreshKey((k) => k + 1)}
-            isPremium={isPremium}
-            setShowPremium={setShowPremium}
-            freeLimit={FREE_LIMIT}
-          />
+        <Suspense fallback={<div className="p-6 text-center">Loading...</div>}>
+  <ExpenseForm
+    userId={user.id}
+    language={language}
+    onSuccess={() => setRefreshKey((k) => k + 1)}
+    isPremium={isPremium}
+    setShowPremium={setShowPremium}
+    freeLimit={FREE_LIMIT}
+  />
+</Suspense>
         </div>
       </main>
 
