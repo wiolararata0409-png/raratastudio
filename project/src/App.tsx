@@ -180,60 +180,60 @@ function App() {
   };
 
   const t = translations[language];
-
-  if (!user) {
-    if (path === '/login') {
-   return (
-  <Suspense fallback={<div className="p-6 text-center">Loading...</div>}>
-    <Auth />
-  </Suspense>
-);
-
+if (!user) {
+  if (path === '/login') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 flex flex-col items-center justify-center px-6 text-center">
-        <h1 className="text-5xl leading-tight font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
-          Budget Tracker
-        </h1>
-
-        <div className="mb-4">
-          <PiggyBank size={42} className="mx-auto text-indigo-600" />
-        </div>
-
-        <p className="text-lg text-slate-600 mb-3 max-w-xl">
-          Track your daily expenses in seconds.
-          <br />
-          Simple budget tracker for everyday spending.
-        </p>
-
-        <p className="text-sm text-slate-500 mb-8">
-          Free plan available. Premium unlocks statistics.
-        </p>
-
-        <div className="flex gap-4 mb-10">
-          <a
-            href="/login"
-            className="px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold shadow-lg hover:scale-105 transition"
-          >
-            Start tracking
-          </a>
-
-          <a
-            href="/login"
-            className="px-6 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 font-semibold hover:bg-slate-50 transition"
-          >
-            Login
-          </a>
-        </div>
-
-        <div className="grid gap-3 text-slate-700 max-w-md">
-          <div>✓ Quick expense logging</div>
-          <div>✓ Spending statistics</div>
-          <div>✓ CSV export</div>
-          <div>✓ Multiple currencies</div>
-        </div>
-      </div>
+      <Suspense fallback={<div className="p-6 text-center">Loading...</div>}>
+        <Auth />
+      </Suspense>
     );
   }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 flex flex-col items-center justify-center px-6 text-center">
+      <h1 className="text-5xl leading-tight font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
+        Budget Tracker
+      </h1>
+
+      <div className="mb-4">
+        <PiggyBank size={42} className="mx-auto text-indigo-600" />
+      </div>
+
+      <p className="text-lg text-slate-600 mb-3 max-w-xl">
+        Track your daily expenses in seconds.
+        <br />
+        Simple budget tracker for everyday spending.
+      </p>
+
+      <p className="text-sm text-slate-500 mb-8">
+        Free plan available. Premium unlocks statistics.
+      </p>
+
+      <div className="flex gap-4 mb-10">
+        <a
+          href="/login"
+          className="px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold shadow-lg hover:scale-105 transition"
+        >
+          Start tracking
+        </a>
+
+        <a
+          href="/login"
+          className="px-6 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 font-semibold hover:bg-slate-50 transition"
+        >
+          Login
+        </a>
+      </div>
+
+      <div className="grid gap-3 text-slate-700 max-w-md">
+        <div>✓ Quick expense logging</div>
+        <div>✓ Spending statistics</div>
+        <div>✓ CSV export</div>
+        <div>✓ Multiple currencies</div>
+      </div>
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
