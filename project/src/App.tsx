@@ -305,15 +305,17 @@ function App() {
         </div>
       </main>
 
-      {showPremium && (
-        <PremiumModal
-          isOpen={showPremium}
-          onClose={() => setShowPremium(false)}
-          isPremium={isPremium}
-          language={language}
-          userId={user.id}
-        />
-      )}
+   {showPremium && (
+  <Suspense fallback={<div className="p-6 text-center">Loading...</div>}>
+    <PremiumModal
+      isOpen={showPremium}
+      onClose={() => setShowPremium(false)}
+      isPremium={isPremium}
+      language={language}
+      userId={user.id}
+    />
+  </Suspense>
+)}
 
       <footer
         style={{
