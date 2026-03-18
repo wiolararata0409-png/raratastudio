@@ -136,18 +136,20 @@ function App() {
   const [showPremium, setShowPremium] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-
+  const [loading, setLoading] = useState(true);
   const FREE_LIMIT = 50;
 
   useEffect(() => {
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
+     setUser(session?.user || null);
+setLoading(false);
     });
 
     supabase.auth.getSession().then(({ data }) => {
       setUser(data.session?.user || null);
+setLoading(false);
     });
 
     return () => {
