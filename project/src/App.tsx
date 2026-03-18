@@ -182,6 +182,13 @@ setLoading(false);
   };
 
   const t = translations[language];
+  if (loading) {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <p>Loading app...</p>
+    </div>
+  );
+}
 if (!user) {
   if (path === '/login') {
     return (
