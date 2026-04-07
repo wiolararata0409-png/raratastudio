@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { AlertCircle, LogIn } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
@@ -34,10 +35,30 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-700 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-md">
         <div className="bg-white rounded-3xl shadow-2xl p-8">
-          <h1 className="text-3xl font-bold text-center text-slate-800 mb-2">Budget Tracker</h1>
-          <p className="text-center text-slate-600 mb-8">Control your daily spending</p>
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-slate-800 mb-2">Budget Tracker</h1>
+            <p className="text-slate-600 mb-6">Track your expenses without the chaos</p>
+
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-left space-y-3">
+              <p className="text-sm text-slate-700 font-medium">
+                Free to use. Create an account to save your data, export CSV, and unlock premium insights.
+              </p>
+
+              <div className="space-y-2 text-sm text-slate-600">
+                <div className="rounded-xl bg-white border border-slate-200 px-3 py-2">
+                  Track expenses in multiple currencies
+                </div>
+                <div className="rounded-xl bg-white border border-slate-200 px-3 py-2">
+                  Export your data to CSV
+                </div>
+                <div className="rounded-xl bg-white border border-slate-200 px-3 py-2">
+                  Upgrade anytime for advanced statistics
+                </div>
+              </div>
+            </div>
+          </div>
 
           <form onSubmit={handleAuth} className="space-y-4">
             <div>
