@@ -58,7 +58,7 @@ export default function Auth() {
                 </div>
               </div>
             </div>
-          </div>
+         
 </div>
 
 <p className="text-sm text-green-600 font-semibold mt-3 text-center">
