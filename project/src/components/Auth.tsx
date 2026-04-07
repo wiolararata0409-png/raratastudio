@@ -102,7 +102,7 @@ export default function Auth() {
               className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 rounded-xl font-bold text-lg hover:shadow-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
             >
               <LogIn size={20} />
-              {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
+              {loading ? 'Loading...' : isSignUp ? 'Create free account' : 'Continue'}
             </button>
           </form>
 
