@@ -95,7 +95,9 @@ export default function Auth() {
                 <p className="text-red-700 text-sm">{error}</p>
               </div>
             )}
-
+<p className="text-xs text-slate-500 text-center">
+  Takes less than 30 seconds
+</p>
             <button
               type="submit"
               disabled={loading}
