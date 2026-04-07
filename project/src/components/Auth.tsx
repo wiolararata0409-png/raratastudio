@@ -59,7 +59,11 @@ export default function Auth() {
               </div>
             </div>
           </div>
+</div>
 
+<p className="text-sm text-green-600 font-semibold mt-3 text-center">
+  No sign-up needed to explore — create an account only to save your data
+</p>
           <form onSubmit={handleAuth} className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Email</label>
