@@ -407,14 +407,17 @@ export default function BudgetTracker({
 
     const totalSpent = Array.from(totals.values()).reduce((sum, value) => sum + value, 0);
 
-    const sorted = Array.from(totals.entries())
-      .map(([category, total], index) => ({
-        category,
-        total,
-        percent: totalSpent > 0 ? Math.round((total / totalSpent) * 100) : 0,
-        colorClass: categoryColors[index % categoryColors.length],
-      }))
-      .sort((a, b) => b.total - a.total);
+   const sorted = Array.from(totals.entries()).map(
+  ([category, total], index) => {
+    return {
+      category,
+      total,
+      percent:
+        totalSpent > 0 ? Math.round((total / totalSpent) * 100) : 0,
+      colorClass: categoryColors[index % categoryColors.length],
+    };
+  }
+).sort((a, b) => b.total - a.total);
 
     setMonthlyBreakdown(sorted);
     setBreakdownLoading(false);
