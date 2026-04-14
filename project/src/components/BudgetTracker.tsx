@@ -7,7 +7,7 @@ interface BudgetTrackerProps {
   language: string;
   refreshKey: number;
 }
-// ✅ currency by language
+
 const currencyByLang: Record<string, { code: string; locale: string }> = {
   pl: { code: "PLN", locale: "pl-PL" },
   en: { code: "GBP", locale: "en-GB" },
@@ -16,20 +16,28 @@ const currencyByLang: Record<string, { code: string; locale: string }> = {
   de: { code: "EUR", locale: "de-DE" },
 };
 
-const getCurrency = (language: string) => currencyByLang[language] || currencyByLang.en;
+const getCurrency = (language: string) =>
+  currencyByLang[language] || currencyByLang.en;
 
 const formatMoney = (value: number, language: string) => {
   const { code, locale } = getCurrency(language);
-  return new Intl.NumberFormat(locale, { style: "currency", currency: code }).format(value);
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: code,
+  }).format(value);
 };
+
 const translations: Record<string, Record<string, string>> = {
   en: {
     dailyBudget: "Daily Budget",
+    monthlyBudget: "Monthly Budget",
     spent: "Spent",
     remaining: "Remaining",
     warning: "Budget Limit Alert!",
-    youveExceeded: "You have exceeded your daily budget",
-    setBudget: "Set Budget Limit",
+    youveExceeded: "You have exceeded your budget",
+    setBudget: "Set Budget Limits",
+    dailyLimit: "Daily Limit",
+    monthlyLimit: "Monthly Limit",
     cancel: "Cancel",
     save: "Save",
     statistics: "Statistics",
@@ -45,14 +53,19 @@ const translations: Record<string, Record<string, string>> = {
     expenseHistory: "Expense History",
     noExpenses: "No expenses yet",
     last7days: "Last 7 days",
+    used: "used",
+    left: "left",
   },
   pl: {
     dailyBudget: "Dzienny Budżet",
+    monthlyBudget: "Miesięczny Budżet",
     spent: "Wydano",
     remaining: "Pozostało",
     warning: "Alert!",
     youveExceeded: "Przekroczyłeś budżet",
-    setBudget: "Ustaw limit",
+    setBudget: "Ustaw limity budżetu",
+    dailyLimit: "Limit dzienny",
+    monthlyLimit: "Limit miesięczny",
     cancel: "Anuluj",
     save: "Zapisz",
     statistics: "Statystyki",
@@ -68,14 +81,19 @@ const translations: Record<string, Record<string, string>> = {
     expenseHistory: "Historia wydatków",
     noExpenses: "Brak wydatków",
     last7days: "Ostatnie 7 dni",
+    used: "wykorzystano",
+    left: "pozostało",
   },
   es: {
     dailyBudget: "Presupuesto Diario",
+    monthlyBudget: "Presupuesto Mensual",
     spent: "Gastado",
     remaining: "Restante",
     warning: "Alerta!",
     youveExceeded: "Has excedido tu presupuesto",
-    setBudget: "Establecer límite",
+    setBudget: "Establecer límites",
+    dailyLimit: "Límite diario",
+    monthlyLimit: "Límite mensual",
     cancel: "Cancelar",
     save: "Guardar",
     statistics: "Estadísticas",
@@ -91,14 +109,19 @@ const translations: Record<string, Record<string, string>> = {
     expenseHistory: "Historial de gastos",
     noExpenses: "Sin gastos todavía",
     last7days: "Últimos 7 días",
+    used: "usado",
+    left: "restante",
   },
   fr: {
     dailyBudget: "Budget Quotidien",
+    monthlyBudget: "Budget Mensuel",
     spent: "Dépensé",
     remaining: "Restant",
     warning: "Alerte!",
     youveExceeded: "Vous avez dépassé votre budget",
-    setBudget: "Définir limite",
+    setBudget: "Définir les limites",
+    dailyLimit: "Limite quotidienne",
+    monthlyLimit: "Limite mensuelle",
     cancel: "Annuler",
     save: "Enregistrer",
     statistics: "Statistiques",
@@ -106,7 +129,8 @@ const translations: Record<string, Record<string, string>> = {
     unlockStats: "Débloquez les statistiques avec Premium",
     upgrade: "Mettre à niveau",
     premium: "Premium",
-    premiumDesc: "Débloquez les statistiques complètes et les fonctions premium.",
+    premiumDesc:
+      "Débloquez les statistiques complètes et les fonctions premium.",
     buyPremium: "Acheter Premium",
     close: "Fermer",
     limit: "Limite",
@@ -114,14 +138,19 @@ const translations: Record<string, Record<string, string>> = {
     expenseHistory: "Historique des dépenses",
     noExpenses: "Aucune dépense",
     last7days: "7 derniers jours",
+    used: "utilisé",
+    left: "restant",
   },
   de: {
     dailyBudget: "Tagesbudget",
+    monthlyBudget: "Monatsbudget",
     spent: "Ausgegeben",
     remaining: "Verbleibend",
     warning: "Warnung!",
     youveExceeded: "Du hast dein Budget überschritten",
-    setBudget: "Limit setzen",
+    setBudget: "Budgets festlegen",
+    dailyLimit: "Tageslimit",
+    monthlyLimit: "Monatslimit",
     cancel: "Abbrechen",
     save: "Speichern",
     statistics: "Statistiken",
@@ -129,20 +158,24 @@ const translations: Record<string, Record<string, string>> = {
     unlockStats: "Statistiken mit Premium freischalten",
     upgrade: "Upgrade",
     premium: "Premium",
-    premiumDesc: "Schalte volle Statistiken und Premium-Funktionen frei.",
+    premiumDesc:
+      "Schalte volle Statistiken und Premium-Funktionen frei.",
     buyPremium: "Premium kaufen",
     close: "Schließen",
     limit: "Limit",
     loading: "Laden...",
     expenseHistory: "Ausgabenverlauf",
     noExpenses: "Keine Ausgaben",
-  last7days: "Letzte 7 Tage",
+    last7days: "Letzte 7 Tage",
+    used: "verwendet",
+    left: "übrig",
   },
 };
 
 const STRIPE_MONTHLY_URL =
- "/.netlify/functions/create-portal-session?plan=monthly"; // <- podmień na swój link
-const STRIPE_YEARLY_URL = "/.netlify/functions/create-portal-session?plan=yearly";
+  "/.netlify/functions/create-portal-session?plan=monthly";
+const STRIPE_YEARLY_URL =
+  "/.netlify/functions/create-portal-session?plan=yearly";
 
 type HistoryItem = {
   id: string;
@@ -151,62 +184,88 @@ type HistoryItem = {
   date: string;
 };
 
-export default function BudgetTracker({ userId, language, refreshKey }: BudgetTrackerProps) {
+type BudgetView = "daily" | "monthly";
+
+export default function BudgetTracker({
+  userId,
+  language,
+  refreshKey,
+}: BudgetTrackerProps) {
   const [budget, setBudgetLimit] = useState(30);
-  
+  const [monthlyBudget, setMonthlyBudget] = useState(200);
   const [spent, setSpent] = useState(0);
+  const [monthlySpent, setMonthlySpent] = useState(0);
 
   const [showSettings, setShowSettings] = useState(false);
   const [newBudget, setNewBudget] = useState(30);
+  const [newMonthlyBudget, setNewMonthlyBudget] = useState(200);
   const [loading, setLoading] = useState(true);
 
   const [isPremium, setIsPremium] = useState(false);
   const [showPremium, setShowPremium] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">("monthly");
-const exportCSV = () => {
-  const csvContent =
-    "Date,Category,Amount\n" +
-    history.map(item => `${item.date},${item.category},${item.amount}`).join("\n");
+  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">(
+    "monthly"
+  );
+  const [budgetView, setBudgetView] = useState<BudgetView>("daily");
 
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "expenses.csv";
-  link.click();
-};
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
-const last7Days = (() => {
-  // history: [{ date: "YYYY-MM-DD", amount: ... }]
-  const map = new Map<string, number>();
 
-  for (const item of history) {
-    const d = (item as any).date;
-    const a = Number((item as any).amount || 0);
-    if (!d) continue;
-    map.set(d, (map.get(d) || 0) + a);
-  }
-
-  const days: { date: string; total: number }[] = [];
-  for (let i = 6; i >= 0; i--) {
-    const dt = new Date();
-    dt.setDate(dt.getDate() - i);
-    const key = dt.toISOString().split("T")[0];
-    days.push({ date: key, total: map.get(key) || 0 });
-  }
-
-  return days;
-})();
-
-const maxDayTotal = Math.max(1, budget, ...last7Days.map((d) => d.total));
   const t = useMemo(() => translations[language] || translations.en, [language]);
 
-  const handleCreateBudget = async (uid: string, defaultLimit = 30) => {
-    const { error } = await supabase
-      .from("user_budgets")
-      .insert([{ user_id: uid, daily_limit: defaultLimit }]);
+  const exportCSV = () => {
+    const csvContent =
+      "Date,Category,Amount\n" +
+      history
+        .map((item) => `${item.date},${item.category ?? ""},${item.amount}`)
+        .join("\n");
+
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "expenses.csv";
+    link.click();
+  };
+
+  const last7Days = (() => {
+    const map = new Map<string, number>();
+
+    for (const item of history) {
+      const d = item.date;
+      const a = Number(item.amount || 0);
+      if (!d) continue;
+      map.set(d, (map.get(d) || 0) + a);
+    }
+
+    const days: { date: string; total: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const dt = new Date();
+      dt.setDate(dt.getDate() - i);
+      const key = dt.toISOString().split("T")[0];
+      days.push({ date: key, total: map.get(key) || 0 });
+    }
+
+    return days;
+  })();
+
+  const maxDayTotal = Math.max(1, budget, ...last7Days.map((d) => d.total));
+
+  const handleCreateBudget = async (
+    uid: string,
+    defaultDailyLimit = 30,
+    defaultMonthlyLimit = 200
+  ) => {
+    const { error } = await supabase.from("user_budgets").insert([
+      {
+        user_id: uid,
+        daily_limit: defaultDailyLimit,
+        monthly_limit: defaultMonthlyLimit,
+      },
+    ]);
 
     if (error) {
       console.error("Create budget error:", error);
@@ -216,7 +275,6 @@ const maxDayTotal = Math.max(1, budget, ...last7Days.map((d) => d.total));
   };
 
   const checkSubscription = async () => {
-    // ✅ Wariant A (jak u Ciebie w App.tsx): tabela "subscriptions" + expires_at
     const { data } = await supabase
       .from("subscriptions")
       .select("is_active, expires_at")
@@ -228,14 +286,6 @@ const maxDayTotal = Math.max(1, budget, ...last7Days.map((d) => d.total));
       (!data?.expires_at || new Date(data.expires_at) > new Date());
 
     setIsPremium(active);
-
-    // ❗ Jeśli premium trzymasz w "user_subscriptions" (bez expires_at), zamień na:
-    // const { data } = await supabase
-    //   .from("user_subscriptions")
-    //   .select("is_active")
-    //   .eq("user_id", userId)
-    //   .maybeSingle();
-    // setIsPremium(!!data?.is_active);
   };
 
   const loadTodayExpenses = async () => {
@@ -248,9 +298,37 @@ const maxDayTotal = Math.max(1, budget, ...last7Days.map((d) => d.total));
       .eq("date", today);
 
     const total =
-      data?.reduce((sum, exp: any) => sum + parseFloat(exp.amount as any), 0) || 0;
+      data?.reduce(
+        (sum, exp: { amount: string | number }) => sum + parseFloat(String(exp.amount)),
+        0
+      ) || 0;
 
     setSpent(total);
+  };
+
+  const loadMonthlyExpenses = async () => {
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
+      .toISOString()
+      .split("T")[0];
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+      .toISOString()
+      .split("T")[0];
+
+    const { data } = await supabase
+      .from("expenses")
+      .select("amount")
+      .eq("user_id", userId)
+      .gte("date", firstDay)
+      .lte("date", lastDay);
+
+    const total =
+      data?.reduce(
+        (sum, exp: { amount: string | number }) => sum + parseFloat(String(exp.amount)),
+        0
+      ) || 0;
+
+    setMonthlySpent(total);
   };
 
   const loadHistory = async () => {
@@ -265,7 +343,9 @@ const maxDayTotal = Math.max(1, budget, ...last7Days.map((d) => d.total));
       .order("date", { ascending: false })
       .limit(50);
 
-    if (!error && data) setHistory(data as any);
+    if (!error && data) {
+      setHistory(data as HistoryItem[]);
+    }
 
     setHistoryLoading(false);
   };
@@ -274,22 +354,29 @@ const maxDayTotal = Math.max(1, budget, ...last7Days.map((d) => d.total));
     try {
       const { data: budgetData } = await supabase
         .from("user_budgets")
-        .select("daily_limit")
+        .select("daily_limit, monthly_limit")
         .eq("user_id", userId)
         .maybeSingle();
 
       if (budgetData) {
-        setBudgetLimit(budgetData.daily_limit);
-        setNewBudget(budgetData.daily_limit);
+        const dailyLimit = Number(budgetData.daily_limit ?? 30);
+        const monthlyLimit = Number(budgetData.monthly_limit ?? 200);
+
+        setBudgetLimit(dailyLimit);
+        setMonthlyBudget(monthlyLimit);
+        setNewBudget(dailyLimit);
+        setNewMonthlyBudget(monthlyLimit);
       } else {
-        const ok = await handleCreateBudget(userId, 30);
+        const ok = await handleCreateBudget(userId, 30, 200);
         if (ok) {
           setBudgetLimit(30);
+          setMonthlyBudget(200);
           setNewBudget(30);
+          setNewMonthlyBudget(200);
         }
       }
 
-      await loadTodayExpenses();
+      await Promise.all([loadTodayExpenses(), loadMonthlyExpenses()]);
     } finally {
       setLoading(false);
     }
@@ -298,10 +385,14 @@ const maxDayTotal = Math.max(1, budget, ...last7Days.map((d) => d.total));
   const handleUpdateBudget = async () => {
     await supabase
       .from("user_budgets")
-      .update({ daily_limit: newBudget })
+      .update({
+        daily_limit: newBudget,
+        monthly_limit: newMonthlyBudget,
+      })
       .eq("user_id", userId);
 
     setBudgetLimit(newBudget);
+    setMonthlyBudget(newMonthlyBudget);
     setShowSettings(false);
   };
 
@@ -311,13 +402,12 @@ const maxDayTotal = Math.max(1, budget, ...last7Days.map((d) => d.total));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
- 
-useEffect(() => {
-  loadTodayExpenses();
-  if (isPremium) loadHistory();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [refreshKey]);
-  // ✅ Auto-odświeżanie “Spent” i historii po insert/update/delete w expenses
+  useEffect(() => {
+    Promise.all([loadTodayExpenses(), loadMonthlyExpenses()]);
+    if (isPremium) loadHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey, isPremium]);
+
   useEffect(() => {
     const channel = supabase
       .channel(`expenses-${userId}`)
@@ -330,7 +420,7 @@ useEffect(() => {
           filter: `user_id=eq.${userId}`,
         },
         async () => {
-          await loadTodayExpenses();
+          await Promise.all([loadTodayExpenses(), loadMonthlyExpenses()]);
           if (isPremium) await loadHistory();
         }
       )
@@ -342,9 +432,25 @@ useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, isPremium]);
 
-  const remaining = Math.max(0, budget - spent);
-  const percentage = Math.min(100, (spent / budget) * 100);
-  const isExceeded = spent > budget;
+  const dailyRemaining = Math.max(0, budget - spent);
+  const dailyPercentage = budget > 0 ? Math.min(100, (spent / budget) * 100) : 0;
+  const dailyExceeded = spent > budget;
+
+  const monthlyRemaining = Math.max(0, monthlyBudget - monthlySpent);
+  const monthlyPercentage =
+    monthlyBudget > 0 ? Math.min(100, (monthlySpent / monthlyBudget) * 100) : 0;
+  const monthlyExceeded = monthlySpent > monthlyBudget;
+
+  const currentLimit = budgetView === "daily" ? budget : monthlyBudget;
+  const currentSpent = budgetView === "daily" ? spent : monthlySpent;
+  const currentRemaining =
+    budgetView === "daily" ? dailyRemaining : monthlyRemaining;
+  const currentPercentage =
+    budgetView === "daily" ? dailyPercentage : monthlyPercentage;
+  const currentExceeded =
+    budgetView === "daily" ? dailyExceeded : monthlyExceeded;
+  const currentTitle =
+    budgetView === "daily" ? t.dailyBudget : t.monthlyBudget;
 
   if (loading) {
     return <div className="text-center py-12 text-slate-600">{t.loading}</div>;
@@ -352,10 +458,9 @@ useEffect(() => {
 
   return (
     <div className="space-y-4">
-      {/* TOP CARD */}
       <div className="bg-white rounded-3xl shadow-lg p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-slate-800">{t.dailyBudget}</h2>
+          <h2 className="text-2xl font-bold text-slate-800">{currentTitle}</h2>
           <button
             onClick={() => setShowSettings(true)}
             className="p-2 hover:bg-slate-100 rounded-lg transition"
@@ -364,47 +469,97 @@ useEffect(() => {
           </button>
         </div>
 
+        <div className="mb-6 inline-flex bg-slate-100 rounded-xl p-1">
+          <button
+            onClick={() => setBudgetView("daily")}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+              budgetView === "daily"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-slate-600"
+            }`}
+          >
+            {t.dailyBudget}
+          </button>
+          <button
+            onClick={() => setBudgetView("monthly")}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+              budgetView === "monthly"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-slate-600"
+            }`}
+          >
+            {t.monthlyBudget}
+          </button>
+        </div>
+
         <div className="space-y-6">
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
-              <p className="text-slate-600 text-sm font-semibold mb-1">{t.limit}</p>
-              <p className="text-3xl font-bold text-slate-800">{formatMoney(budget, language)}</p>
+              <p className="text-slate-600 text-sm font-semibold mb-1">
+                {t.limit}
+              </p>
+              <p className="text-3xl font-bold text-slate-800">
+                {formatMoney(currentLimit, language)}
+              </p>
             </div>
 
             <div className="text-center">
-              <p className={`text-sm font-semibold mb-1 ${isExceeded ? "text-red-600" : "text-slate-600"}`}>
+              <p
+                className={`text-sm font-semibold mb-1 ${
+                  currentExceeded ? "text-red-600" : "text-slate-600"
+                }`}
+              >
                 {t.spent}
               </p>
-              <p className={`text-3xl font-bold ${isExceeded ? "text-red-600" : "text-slate-800"}`}>
-                {formatMoney(spent, language)}
+              <p
+                className={`text-3xl font-bold ${
+                  currentExceeded ? "text-red-600" : "text-slate-800"
+                }`}
+              >
+                {formatMoney(currentSpent, language)}
               </p>
             </div>
 
             <div className="text-center">
-              <p className="text-slate-600 text-sm font-semibold mb-1">{t.remaining}</p>
-              <p className={`text-3xl font-bold ${isExceeded ? "text-red-600" : "text-green-600"}`}>
-                {formatMoney(remaining, language)}
+              <p className="text-slate-600 text-sm font-semibold mb-1">
+                {t.remaining}
+              </p>
+              <p
+                className={`text-3xl font-bold ${
+                  currentExceeded ? "text-red-600" : "text-green-600"
+                }`}
+              >
+                {formatMoney(currentRemaining, language)}
               </p>
             </div>
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-slate-600 font-semibold">{Math.round(percentage)}%</p>
+              <p className="text-slate-600 font-semibold">
+                {Math.round(currentPercentage)}% {t.used}
+              </p>
+              <p className="text-slate-500 text-sm">
+                {formatMoney(currentRemaining, language)} {t.left}
+              </p>
             </div>
 
             <div className="w-full bg-slate-200 rounded-full h-3">
               <div
                 className={`h-3 rounded-full transition-all duration-300 ${
-                  isExceeded ? "bg-red-500" : percentage > 75 ? "bg-yellow-500" : "bg-green-500"
+                  currentExceeded
+                    ? "bg-red-500"
+                    : currentPercentage > 75
+                    ? "bg-yellow-500"
+                    : "bg-green-500"
                 }`}
-                style={{ width: `${Math.min(100, percentage)}%` }}
+                style={{ width: `${Math.min(100, currentPercentage)}%` }}
               />
             </div>
           </div>
         </div>
 
-        {isExceeded && (
+        {currentExceeded && (
           <div className="mt-6 flex items-start gap-3 bg-red-50 border-2 border-red-300 rounded-xl p-4">
             <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={24} />
             <div>
@@ -415,20 +570,44 @@ useEffect(() => {
         )}
       </div>
 
-      {/* SETTINGS MODAL */}
       {showSettings && (
         <div className="fixed inset-0 bg-black/50 flex items-end z-50">
           <div className="bg-white w-full rounded-t-3xl p-6 animate-in slide-in-from-bottom">
-            <h3 className="text-2xl font-bold text-slate-800 mb-4">{t.setBudget}</h3>
+            <h3 className="text-2xl font-bold text-slate-800 mb-4">
+              {t.setBudget}
+            </h3>
+
             <div className="space-y-4">
-              <input
-                type="number"
-                value={newBudget}
-                onChange={(e) => setNewBudget(parseFloat(e.target.value))}
-                className="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 text-xl"
-                step="0.01"
-                min="1"
-              />
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  {t.dailyLimit}
+                </label>
+                <input
+                  type="number"
+                  value={newBudget}
+                  onChange={(e) => setNewBudget(parseFloat(e.target.value) || 0)}
+                  className="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 text-xl"
+                  step="0.01"
+                  min="1"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  {t.monthlyLimit}
+                </label>
+                <input
+                  type="number"
+                  value={newMonthlyBudget}
+                  onChange={(e) =>
+                    setNewMonthlyBudget(parseFloat(e.target.value) || 0)
+                  }
+                  className="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 text-xl"
+                  step="0.01"
+                  min="1"
+                />
+              </div>
+
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowSettings(false)}
@@ -448,45 +627,49 @@ useEffect(() => {
         </div>
       )}
 
-      {/* STATS SECTION */}
       <div className="mt-6">
         <h3 className="text-lg font-semibold mb-2">{t.statistics}</h3>
 
         {isPremium ? (
           <div className="bg-white rounded-3xl shadow-lg p-6">
             <h3 className="text-lg font-bold mb-4">{t.expenseHistory}</h3>
-            <button
-  onClick={exportCSV}
-  className="mb-4 px-4 py-2 bg-green-600 text-white rounded-xl"
->
-  Export CSV
-</button>
-      {/* WOW: 7-day mini chart */}
-<div className="mb-4">
-  <div className="text-sm font-semibold text-slate-700 mb-2">
-  {t.last7days}
-  </div>
 
-  <div className="flex items-end gap-2 h-24">
-    {last7Days.map((d) => {
-      const h = Math.round((d.total / maxDayTotal) * 100);
-      return (
-        <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
-          <div className="w-full bg-slate-100 rounded-lg overflow-hidden h-20 flex items-end">
-            <div
-              className="w-full bg-blue-600 transition-all duration-500"
-style={{ height: `${h}%` }}
-             title={`${d.date}: ${formatMoney(d.total, language)}`}
-            />
-          </div>
-          <div className="text-[10px] text-slate-500">
-            {d.date.slice(5)}
-          </div>
-        </div>
-      );
-    })}
-  </div>
-</div>
+            <button
+              onClick={exportCSV}
+              className="mb-4 px-4 py-2 bg-green-600 text-white rounded-xl"
+            >
+              Export CSV
+            </button>
+
+            <div className="mb-4">
+              <div className="text-sm font-semibold text-slate-700 mb-2">
+                {t.last7days}
+              </div>
+
+              <div className="flex items-end gap-2 h-24">
+                {last7Days.map((d) => {
+                  const h = Math.round((d.total / maxDayTotal) * 100);
+                  return (
+                    <div
+                      key={d.date}
+                      className="flex-1 flex flex-col items-center gap-1"
+                    >
+                      <div className="w-full bg-slate-100 rounded-lg overflow-hidden h-20 flex items-end">
+                        <div
+                          className="w-full bg-blue-600 transition-all duration-500"
+                          style={{ height: `${h}%` }}
+                          title={`${d.date}: ${formatMoney(d.total, language)}`}
+                        />
+                      </div>
+                      <div className="text-[10px] text-slate-500">
+                        {d.date.slice(5)}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
             {historyLoading ? (
               <p>{t.loading}</p>
             ) : history.length === 0 ? (
@@ -494,9 +677,12 @@ style={{ height: `${h}%` }}
             ) : (
               <div className="space-y-2">
                 {history.map((item) => (
-                  <div key={item.id} className="flex justify-between text-sm border-b pb-2">
+                  <div
+                    key={item.id}
+                    className="flex justify-between text-sm border-b pb-2"
+                  >
                     <span>{item.date}</span>
-                  <span>{formatMoney(Number(item.amount), language)}</span>
+                    <span>{formatMoney(Number(item.amount), language)}</span>
                   </div>
                 ))}
               </div>
@@ -532,7 +718,9 @@ style={{ height: `${h}%` }}
                     <button
                       onClick={() => setSelectedPlan("monthly")}
                       className={`px-4 py-2 rounded ${
-                        selectedPlan === "monthly" ? "bg-blue-600 text-white" : "bg-gray-200"
+                        selectedPlan === "monthly"
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-200"
                       }`}
                     >
                       Monthly
@@ -541,27 +729,31 @@ style={{ height: `${h}%` }}
                     <button
                       onClick={() => setSelectedPlan("yearly")}
                       className={`px-4 py-2 rounded ${
-                        selectedPlan === "yearly" ? "bg-blue-600 text-white" : "bg-gray-200"
+                        selectedPlan === "yearly"
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-200"
                       }`}
                     >
                       Yearly
                     </button>
                   </div>
-<a
-  href={`${selectedPlan === "monthly" ? STRIPE_MONTHLY_URL : STRIPE_YEARLY_URL}&user_id=${encodeURIComponent(
-    userId
-  )}`}
-  className="mt-4 w-full block text-center py-3 bg-blue-600 text-white rounded-xl font-semibold"
->
-  {t.buyPremium}
-</a>
-            </div>
+
+                  <a
+                    href={`${
+                      selectedPlan === "monthly"
+                        ? STRIPE_MONTHLY_URL
+                        : STRIPE_YEARLY_URL
+                    }&user_id=${encodeURIComponent(userId)}`}
+                    className="mt-4 w-full block text-center py-3 bg-blue-600 text-white rounded-xl font-semibold"
+                  >
+                    {t.buyPremium}
+                  </a>
+                </div>
               </div>
             )}
           </>
         )}
       </div>
-      
     </div>
   );
 }
