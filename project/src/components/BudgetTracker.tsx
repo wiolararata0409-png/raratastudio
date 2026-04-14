@@ -446,7 +446,7 @@ export default function BudgetTracker({
     const totalSpent = Array.from(totals.values()).reduce((sum, value) => sum + value, 0);
 
     const sorted = Array.from(totals.entries())
-     .map(([categoryKey, total], index) => ({
+.map(([categoryKey, total], index) => ({
   category: getCategoryLabel(categoryKey, t),
   total,
   percent: totalSpent > 0 ? Math.round((total / totalSpent) * 100) : 0,
