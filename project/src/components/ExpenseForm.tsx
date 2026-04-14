@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Plus, Trash2, X, Camera, Image } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
-
 
 interface ExpenseFormProps {
   userId: string;
@@ -13,20 +12,138 @@ interface ExpenseFormProps {
 }
 
 const translations: Record<string, Record<string, string>> = {
-  en: { addExpense: 'Add Expense', amount: 'Amount ', category: 'Category', description: 'Description', notes: 'Notes (optional)', today: "Today's Expenses", empty: 'No expenses yet', add: 'Add', delete: 'Delete', receipt: 'Receipt Photo', addPhoto: 'Add Photo', remove: 'Remove', viewReceipt: 'View Receipt' },
-  pl: { addExpense: 'Dodaj wydatek', amount: 'Kwota ', category: 'Kategoria', description: 'Opis', notes: 'Notatki (opcjonalnie)', today: 'Wydatki dzisiaj', empty: 'Brak wydatków', add: 'Dodaj', delete: 'Usuń', receipt: 'Zdjęcie paragonu', addPhoto: 'Dodaj zdjęcie', remove: 'Usuń', viewReceipt: 'Zobacz paragon' },
-  es: { addExpense: 'Agregar gasto', amount: 'Cantidad ', category: 'Categoría', description: 'Descripción', notes: 'Notas (opcional)', today: 'Gastos de hoy', empty: 'Sin gastos', add: 'Agregar', delete: 'Eliminar', receipt: 'Foto del recibo', addPhoto: 'Agregar foto', remove: 'Eliminar', viewReceipt: 'Ver recibo' },
-  fr: { addExpense: 'Ajouter dépense', amount: 'Montant ', category: 'Catégorie', description: 'Description', notes: 'Notes (facultatif)', today: 'Dépenses d\'aujourd\'hui', empty: 'Aucune dépense', add: 'Ajouter', delete: 'Supprimer', receipt: 'Photo du reçu', addPhoto: 'Ajouter photo', remove: 'Supprimer', viewReceipt: 'Voir reçu' },
-  de: { addExpense: 'Ausgabe hinzufügen', amount: 'Betrag ', category: 'Kategorie', description: 'Beschreibung', notes: 'Notizen (optional)', today: 'Heutige Ausgaben', empty: 'Keine Ausgaben', add: 'Hinzufügen', delete: 'Löschen', receipt: 'Belegfoto', addPhoto: 'Foto hinzufügen', remove: 'Entfernen', viewReceipt: 'Beleg ansehen' }
+  en: {
+    addExpense: 'Add Expense',
+    amount: 'Amount',
+    category: 'Category',
+    description: 'Description',
+    notes: 'Notes (optional)',
+    today: "Today's Expenses",
+    empty: 'No expenses yet',
+    add: 'Add',
+    adding: 'Adding...',
+    delete: 'Delete',
+    receipt: 'Receipt Photo',
+    addPhoto: 'Add Photo',
+    remove: 'Remove',
+    viewReceipt: 'View Receipt',
+    total: 'Total',
+    expenseFallback: 'Expense',
+    food: 'Food',
+    transport: 'Transport',
+    entertainment: 'Entertainment',
+    shopping: 'Shopping',
+    utilities: 'Utilities',
+    other: 'Other',
+  },
+  pl: {
+    addExpense: 'Dodaj wydatek',
+    amount: 'Kwota',
+    category: 'Kategoria',
+    description: 'Opis',
+    notes: 'Notatki (opcjonalnie)',
+    today: 'Wydatki dzisiaj',
+    empty: 'Brak wydatków',
+    add: 'Dodaj',
+    adding: 'Dodawanie...',
+    delete: 'Usuń',
+    receipt: 'Zdjęcie paragonu',
+    addPhoto: 'Dodaj zdjęcie',
+    remove: 'Usuń',
+    viewReceipt: 'Zobacz paragon',
+    total: 'Łącznie',
+    expenseFallback: 'Wydatek',
+    food: 'Jedzenie',
+    transport: 'Transport',
+    entertainment: 'Rozrywka',
+    shopping: 'Zakupy',
+    utilities: 'Rachunki',
+    other: 'Inne',
+  },
+  es: {
+    addExpense: 'Agregar gasto',
+    amount: 'Cantidad',
+    category: 'Categoría',
+    description: 'Descripción',
+    notes: 'Notas (opcional)',
+    today: 'Gastos de hoy',
+    empty: 'Sin gastos',
+    add: 'Agregar',
+    adding: 'Agregando...',
+    delete: 'Eliminar',
+    receipt: 'Foto del recibo',
+    addPhoto: 'Agregar foto',
+    remove: 'Eliminar',
+    viewReceipt: 'Ver recibo',
+    total: 'Total',
+    expenseFallback: 'Gasto',
+    food: 'Comida',
+    transport: 'Transporte',
+    entertainment: 'Entretenimiento',
+    shopping: 'Compras',
+    utilities: 'Servicios',
+    other: 'Otros',
+  },
+  fr: {
+    addExpense: 'Ajouter dépense',
+    amount: 'Montant',
+    category: 'Catégorie',
+    description: 'Description',
+    notes: 'Notes (facultatif)',
+    today: "Dépenses d'aujourd'hui",
+    empty: 'Aucune dépense',
+    add: 'Ajouter',
+    adding: 'Ajout...',
+    delete: 'Supprimer',
+    receipt: 'Photo du reçu',
+    addPhoto: 'Ajouter photo',
+    remove: 'Supprimer',
+    viewReceipt: 'Voir reçu',
+    total: 'Total',
+    expenseFallback: 'Dépense',
+    food: 'Nourriture',
+    transport: 'Transport',
+    entertainment: 'Divertissement',
+    shopping: 'Achats',
+    utilities: 'Factures',
+    other: 'Autres',
+  },
+  de: {
+    addExpense: 'Ausgabe hinzufügen',
+    amount: 'Betrag',
+    category: 'Kategorie',
+    description: 'Beschreibung',
+    notes: 'Notizen (optional)',
+    today: 'Heutige Ausgaben',
+    empty: 'Keine Ausgaben',
+    add: 'Hinzufügen',
+    adding: 'Wird hinzugefügt...',
+    delete: 'Löschen',
+    receipt: 'Belegfoto',
+    addPhoto: 'Foto hinzufügen',
+    remove: 'Entfernen',
+    viewReceipt: 'Beleg ansehen',
+    total: 'Gesamt',
+    expenseFallback: 'Ausgabe',
+    food: 'Essen',
+    transport: 'Transport',
+    entertainment: 'Unterhaltung',
+    shopping: 'Einkaufen',
+    utilities: 'Rechnungen',
+    other: 'Andere',
+  }
 };
 
-const categories: Record<string, string[]> = {
-  en: ['Food','Transport','Entertainment','Shopping','Utilities','Other'],
-  pl: ['Jedzenie','Transport','Rozrywka','Zakupy','Rachunki','Inne'],
-  es: ['Comida','Transporte','Entretenimiento','Compras','Servicios','Otros'],
-  fr: ['Nourriture','Transport','Divertissement','Achats','Factures','Autres'],
-  de: ['Essen','Transport','Unterhaltung','Einkaufen','Rechnungen','Andere']
-};
+const categoryKeys = [
+  'food',
+  'transport',
+  'entertainment',
+  'shopping',
+  'utilities',
+  'other',
+] as const;
+
+type CategoryKey = typeof categoryKeys[number];
 
 interface Expense {
   id: string;
@@ -35,6 +152,65 @@ interface Expense {
   description: string;
   receipt_image_url?: string;
 }
+
+const currencyByLang: Record<string, { code: string; locale: string }> = {
+  pl: { code: 'PLN', locale: 'pl-PL' },
+  en: { code: 'GBP', locale: 'en-GB' },
+  es: { code: 'EUR', locale: 'es-ES' },
+  fr: { code: 'EUR', locale: 'fr-FR' },
+  de: { code: 'EUR', locale: 'de-DE' },
+};
+
+const getCurrency = (language: string) => currencyByLang[language] || currencyByLang.en;
+
+const formatMoney = (value: number, language: string) => {
+  const { code, locale } = getCurrency(language);
+  return new Intl.NumberFormat(locale, { style: 'currency', currency: code }).format(value);
+};
+
+const normalizeCategory = (value: string | null | undefined): CategoryKey | string => {
+  if (!value) return 'other';
+
+  const normalized = value.trim().toLowerCase();
+
+  const mapping: Record<string, CategoryKey> = {
+    food: 'food',
+    jedzenie: 'food',
+    comida: 'food',
+    nourriture: 'food',
+    essen: 'food',
+
+    transport: 'transport',
+    transporte: 'transport',
+
+    entertainment: 'entertainment',
+    rozrywka: 'entertainment',
+    entretenimiento: 'entertainment',
+    divertissement: 'entertainment',
+    unterhaltung: 'entertainment',
+
+    shopping: 'shopping',
+    zakupy: 'shopping',
+    compras: 'shopping',
+    achats: 'shopping',
+    einkaufen: 'shopping',
+
+    utilities: 'utilities',
+    rachunki: 'utilities',
+    servicios: 'utilities',
+    factures: 'utilities',
+    rechnungen: 'utilities',
+
+    other: 'other',
+    inne: 'other',
+    otros: 'other',
+    autres: 'other',
+    andere: 'other',
+  };
+
+  return mapping[normalized] || normalized;
+};
+
 export default function ExpenseForm({
   userId,
   language,
@@ -43,8 +219,10 @@ export default function ExpenseForm({
   setShowPremium,
   freeLimit
 }: ExpenseFormProps) {
+  const t = translations[language] || translations.en;
+
   const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('Food');
+  const [category, setCategory] = useState<CategoryKey>('food');
   const [description, setDescription] = useState('');
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(false);
@@ -52,25 +230,28 @@ export default function ExpenseForm({
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const t = translations[language] || translations.en;
-// currency by language
-const currencyByLang: Record<string, { code: string; locale: string }> = {
-  pl: { code: "PLN", locale: "pl-PL" },
-  en: { code: "GBP", locale: "en-GB" },
-  es: { code: "EUR", locale: "es-ES" },
-  fr: { code: "EUR", locale: "fr-FR" },
-  de: { code: "EUR", locale: "de-DE" },
-};
+  const categoryOptions = useMemo(
+    () =>
+      categoryKeys.map((key) => ({
+        value: key,
+        label: t[key],
+      })),
+    [t]
+  );
 
-const getCurrency = (language: string) => currencyByLang[language] || currencyByLang.en;
-
-const formatMoney = (value: number, language: string) => {
-  const { code, locale } = getCurrency(language);
-  return new Intl.NumberFormat(locale, { style: "currency", currency: code }).format(value);
-};
   useEffect(() => {
     loadExpenses();
   }, [userId]);
+
+  const getCategoryLabel = (rawCategory: string) => {
+    const normalized = normalizeCategory(rawCategory);
+
+    if (normalized in t) {
+      return t[normalized as keyof typeof t];
+    }
+
+    return rawCategory;
+  };
 
   const loadExpenses = async () => {
     const today = new Date().toISOString().split('T')[0];
@@ -81,7 +262,7 @@ const formatMoney = (value: number, language: string) => {
       .eq('date', today)
       .order('created_at', { ascending: false });
 
-    setExpenses(data || []);
+    setExpenses((data as Expense[]) || []);
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,43 +303,45 @@ const formatMoney = (value: number, language: string) => {
 
     return data.publicUrl;
   };
-const handleAddExpense = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!amount) return;
 
-  if (!isPremium && expenses.length >= freeLimit) {
-  setShowPremium(true);
-  return;
-}
+  const handleAddExpense = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!amount) return;
 
-  setLoading(true);
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    const receiptUrl = await uploadReceiptImage();
+    if (!isPremium && expenses.length >= freeLimit) {
+      setShowPremium(true);
+      return;
+    }
 
-    await supabase.from('expenses').insert([
-      {
-        user_id: userId,
-        amount: parseFloat(amount),
-        category,
-        description,
-        date: today,
-        receipt_image_url: receiptUrl
-      }
-    ]);
+    setLoading(true);
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const receiptUrl = await uploadReceiptImage();
 
-    setAmount('');
-    setCategory('Food');
-    setDescription('');
-    setReceiptImage(null);
-    setReceiptPreview(null);
-    onSuccess?.();
-  } catch (error) {
-    console.error('Error adding expense:', error);
-  } finally {
-    setLoading(false);
-  }
-};
+      await supabase.from('expenses').insert([
+        {
+          user_id: userId,
+          amount: parseFloat(amount),
+          category,
+          description,
+          date: today,
+          receipt_image_url: receiptUrl
+        }
+      ]);
+
+      setAmount('');
+      setCategory('food');
+      setDescription('');
+      setReceiptImage(null);
+      setReceiptPreview(null);
+      await loadExpenses();
+      onSuccess?.();
+    } catch (error) {
+      console.error('Error adding expense:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDeleteExpense = async (id: string) => {
     await supabase.from('expenses').delete().eq('id', id);
@@ -178,7 +361,9 @@ const handleAddExpense = async (e: React.FormEvent) => {
 
         <form onSubmit={handleAddExpense} className="space-y-3">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">{t.amount}</label>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
+              {t.amount}
+            </label>
             <input
               type="number"
               value={amount}
@@ -192,32 +377,39 @@ const handleAddExpense = async (e: React.FormEvent) => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">{t.category}</label>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
+              {t.category}
+            </label>
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => setCategory(e.target.value as CategoryKey)}
               className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-lg"
             >
-              {categories[language].map(cat => (
-  <option key={cat} value={cat}>{cat}</option>
-))}
- 
+              {categoryOptions.map((cat) => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.label}
+                </option>
+              ))}
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">{t.notes}</label>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
+              {t.notes}
+            </label>
             <input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-lg"
-             placeholder={t.description}
+              placeholder={t.description}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">{t.receipt}</label>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+              {t.receipt}
+            </label>
             {receiptPreview ? (
               <div className="relative">
                 <img
@@ -252,7 +444,7 @@ const handleAddExpense = async (e: React.FormEvent) => {
             disabled={loading || !amount}
             className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-bold text-lg hover:shadow-lg transition disabled:opacity-50"
           >
-            {loading ? 'Adding...' : t.add}
+            {loading ? t.adding : t.add}
           </button>
         </form>
       </div>
@@ -264,7 +456,7 @@ const handleAddExpense = async (e: React.FormEvent) => {
           <p className="text-slate-600 text-center py-6 text-lg">{t.empty}</p>
         ) : (
           <div className="space-y-3">
-            {expenses.map(exp => (
+            {expenses.map((exp) => (
               <div
                 key={exp.id}
                 className="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-200 hover:border-slate-300 transition"
@@ -272,9 +464,11 @@ const handleAddExpense = async (e: React.FormEvent) => {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-sm font-semibold text-blue-600 bg-blue-100 px-3 py-1 rounded-lg">
-                      {exp.category}
+                      {getCategoryLabel(exp.category)}
                     </span>
-                    <p className="font-semibold text-slate-800">{exp.description || 'Expense'}</p>
+                    <p className="font-semibold text-slate-800">
+                      {exp.description || t.expenseFallback}
+                    </p>
                   </div>
                   {exp.receipt_image_url && (
                     <button
@@ -287,7 +481,9 @@ const handleAddExpense = async (e: React.FormEvent) => {
                   )}
                 </div>
                 <div className="flex items-center gap-3">
-                 <p className="text-lg font-bold text-slate-800">{formatMoney(exp.amount, language)}</p>
+                  <p className="text-lg font-bold text-slate-800">
+                    {formatMoney(exp.amount, language)}
+                  </p>
                   <button
                     onClick={() => handleDeleteExpense(exp.id)}
                     className="p-2 hover:bg-red-100 rounded-lg transition text-red-600"
@@ -299,8 +495,10 @@ const handleAddExpense = async (e: React.FormEvent) => {
             ))}
 
             <div className="mt-4 pt-4 border-t-2 border-slate-200 flex justify-between items-center">
-              <p className="font-bold text-slate-700">Total:</p>
-             <p className="text-2xl font-bold text-slate-800">{formatMoney(total, language)}</p>
+              <p className="font-bold text-slate-700">{t.total}:</p>
+              <p className="text-2xl font-bold text-slate-800">
+                {formatMoney(total, language)}
+              </p>
             </div>
           </div>
         )}
@@ -319,7 +517,8 @@ const handleAddExpense = async (e: React.FormEvent) => {
               <X size={24} />
             </button>
             <img
-              src={selectedImage}              alt="Receipt"
+              src={selectedImage}
+              alt="Receipt"
               className="max-w-full max-h-[90vh] object-contain rounded-xl"
               onClick={(e) => e.stopPropagation()}
             />
