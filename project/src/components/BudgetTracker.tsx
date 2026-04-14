@@ -27,10 +27,23 @@ const formatMoney = (value: number, language: string) => {
   }).format(value);
 };
 
+const categoryColors = [
+  "bg-orange-400",
+  "bg-blue-400",
+  "bg-green-400",
+  "bg-purple-400",
+  "bg-pink-400",
+  "bg-yellow-400",
+  "bg-teal-400",
+  "bg-indigo-400",
+];
+
 const translations: Record<string, Record<string, string>> = {
   en: {
     dailyBudget: "Daily Budget",
     monthlyBudget: "Monthly Budget",
+    monthlyBreakdown: "Monthly Breakdown",
+    totalThisMonth: "Total this month",
     spent: "Spent",
     remaining: "Remaining",
     warning: "Budget Limit Alert!",
@@ -52,13 +65,17 @@ const translations: Record<string, Record<string, string>> = {
     loading: "Loading...",
     expenseHistory: "Expense History",
     noExpenses: "No expenses yet",
+    noCategoryData: "No category data yet",
     last7days: "Last 7 days",
     used: "used",
     left: "left",
+    uncategorized: "Other",
   },
   pl: {
     dailyBudget: "Dzienny Budżet",
     monthlyBudget: "Miesięczny Budżet",
+    monthlyBreakdown: "Podział miesięczny",
+    totalThisMonth: "Łącznie w tym miesiącu",
     spent: "Wydano",
     remaining: "Pozostało",
     warning: "Alert!",
@@ -80,13 +97,17 @@ const translations: Record<string, Record<string, string>> = {
     loading: "Ładowanie...",
     expenseHistory: "Historia wydatków",
     noExpenses: "Brak wydatków",
+    noCategoryData: "Brak danych o kategoriach",
     last7days: "Ostatnie 7 dni",
     used: "wykorzystano",
     left: "pozostało",
+    uncategorized: "Inne",
   },
   es: {
     dailyBudget: "Presupuesto Diario",
     monthlyBudget: "Presupuesto Mensual",
+    monthlyBreakdown: "Desglose mensual",
+    totalThisMonth: "Total este mes",
     spent: "Gastado",
     remaining: "Restante",
     warning: "Alerta!",
@@ -108,13 +129,17 @@ const translations: Record<string, Record<string, string>> = {
     loading: "Cargando...",
     expenseHistory: "Historial de gastos",
     noExpenses: "Sin gastos todavía",
+    noCategoryData: "Sin datos por categoría",
     last7days: "Últimos 7 días",
     used: "usado",
     left: "restante",
+    uncategorized: "Otros",
   },
   fr: {
     dailyBudget: "Budget Quotidien",
     monthlyBudget: "Budget Mensuel",
+    monthlyBreakdown: "Répartition mensuelle",
+    totalThisMonth: "Total ce mois-ci",
     spent: "Dépensé",
     remaining: "Restant",
     warning: "Alerte!",
@@ -137,13 +162,17 @@ const translations: Record<string, Record<string, string>> = {
     loading: "Chargement...",
     expenseHistory: "Historique des dépenses",
     noExpenses: "Aucune dépense",
+    noCategoryData: "Aucune donnée par catégorie",
     last7days: "7 derniers jours",
     used: "utilisé",
     left: "restant",
+    uncategorized: "Autres",
   },
   de: {
     dailyBudget: "Tagesbudget",
     monthlyBudget: "Monatsbudget",
+    monthlyBreakdown: "Monatliche Aufteilung",
+    totalThisMonth: "Gesamt in diesem Monat",
     spent: "Ausgegeben",
     remaining: "Verbleibend",
     warning: "Warnung!",
@@ -166,9 +195,11 @@ const translations: Record<string, Record<string, string>> = {
     loading: "Laden...",
     expenseHistory: "Ausgabenverlauf",
     noExpenses: "Keine Ausgaben",
+    noCategoryData: "Keine Kategoriedaten",
     last7days: "Letzte 7 Tage",
     used: "verwendet",
     left: "übrig",
+    uncategorized: "Andere",
   },
 };
 
@@ -185,6 +216,13 @@ type HistoryItem = {
 };
 
 type BudgetView = "daily" | "monthly";
+
+type CategoryBreakdownItem = {
+  category: string;
+  total: number;
+  percent: number;
+  colorClass: string;
+};
 
 export default function BudgetTracker({
   userId,
@@ -210,6 +248,8 @@ export default function BudgetTracker({
 
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [monthlyBreakdown, setMonthlyBreakdown] = useState<CategoryBreakdownItem[]>([]);
+  const [breakdownLoading, setBreakdownLoading] = useState(false);
 
   const t = useMemo(() => translations[language] || translations.en, [language]);
 
@@ -299,7 +339,8 @@ export default function BudgetTracker({
 
     const total =
       data?.reduce(
-        (sum, exp: { amount: string | number }) => sum + parseFloat(String(exp.amount)),
+        (sum, exp: { amount: string | number }) =>
+          sum + parseFloat(String(exp.amount)),
         0
       ) || 0;
 
@@ -324,11 +365,59 @@ export default function BudgetTracker({
 
     const total =
       data?.reduce(
-        (sum, exp: { amount: string | number }) => sum + parseFloat(String(exp.amount)),
+        (sum, exp: { amount: string | number }) =>
+          sum + parseFloat(String(exp.amount)),
         0
       ) || 0;
 
     setMonthlySpent(total);
+  };
+
+  const loadMonthlyBreakdown = async () => {
+    setBreakdownLoading(true);
+
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
+      .toISOString()
+      .split("T")[0];
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+      .toISOString()
+      .split("T")[0];
+
+    const { data, error } = await supabase
+      .from("expenses")
+      .select("amount, category")
+      .eq("user_id", userId)
+      .gte("date", firstDay)
+      .lte("date", lastDay);
+
+    if (error || !data) {
+      setMonthlyBreakdown([]);
+      setBreakdownLoading(false);
+      return;
+    }
+
+    const totals = new Map<string, number>();
+
+    data.forEach((item: { amount: string | number; category: string | null }) => {
+      const category = item.category?.trim() || t.uncategorized;
+      const amount = Number(item.amount || 0);
+      totals.set(category, (totals.get(category) || 0) + amount);
+    });
+
+    const totalSpent = Array.from(totals.values()).reduce((sum, value) => sum + value, 0);
+
+    const sorted = Array.from(totals.entries())
+      .map(([category, total], index) => ({
+        category,
+        total,
+        percent: totalSpent > 0 ? Math.round((total / totalSpent) * 100) : 0,
+        colorClass: categoryColors[index % categoryColors.length],
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    setMonthlyBreakdown(sorted);
+    setBreakdownLoading(false);
   };
 
   const loadHistory = async () => {
@@ -376,7 +465,11 @@ export default function BudgetTracker({
         }
       }
 
-      await Promise.all([loadTodayExpenses(), loadMonthlyExpenses()]);
+      await Promise.all([
+        loadTodayExpenses(),
+        loadMonthlyExpenses(),
+        loadMonthlyBreakdown(),
+      ]);
     } finally {
       setLoading(false);
     }
@@ -403,10 +496,14 @@ export default function BudgetTracker({
   }, [userId]);
 
   useEffect(() => {
-    Promise.all([loadTodayExpenses(), loadMonthlyExpenses()]);
+    Promise.all([
+      loadTodayExpenses(),
+      loadMonthlyExpenses(),
+      loadMonthlyBreakdown(),
+    ]);
     if (isPremium) loadHistory();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshKey, isPremium]);
+  }, [refreshKey, isPremium, language]);
 
   useEffect(() => {
     const channel = supabase
@@ -420,7 +517,11 @@ export default function BudgetTracker({
           filter: `user_id=eq.${userId}`,
         },
         async () => {
-          await Promise.all([loadTodayExpenses(), loadMonthlyExpenses()]);
+          await Promise.all([
+            loadTodayExpenses(),
+            loadMonthlyExpenses(),
+            loadMonthlyBreakdown(),
+          ]);
           if (isPremium) await loadHistory();
         }
       )
@@ -430,7 +531,7 @@ export default function BudgetTracker({
       supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, isPremium]);
+  }, [userId, isPremium, language]);
 
   const dailyRemaining = Math.max(0, budget - spent);
   const dailyPercentage = budget > 0 ? Math.min(100, (spent / budget) * 100) : 0;
@@ -624,6 +725,47 @@ export default function BudgetTracker({
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {monthlyBreakdown.length > 0 && (
+        <div className="bg-white rounded-3xl shadow-lg p-6">
+          <h3 className="text-lg font-bold mb-4">{t.monthlyBreakdown}</h3>
+
+          {breakdownLoading ? (
+            <p>{t.loading}</p>
+          ) : (
+            <div className="space-y-4">
+              {monthlyBreakdown.map((item) => (
+                <div key={item.category}>
+                  <div className="flex items-center justify-between mb-1 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className={`inline-block w-3 h-3 rounded-full ${item.colorClass}`} />
+                      <span className="font-medium text-slate-700">{item.category}</span>
+                      <span className="text-slate-400">{item.percent}%</span>
+                    </div>
+                    <span className="font-semibold text-slate-800">
+                      {formatMoney(item.total, language)}
+                    </span>
+                  </div>
+
+                  <div className="w-full bg-slate-100 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full ${item.colorClass}`}
+                      style={{ width: `${item.percent}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+
+              <div className="pt-2 border-t flex items-center justify-between text-sm">
+                <span className="text-slate-500">{t.totalThisMonth}</span>
+                <span className="font-bold text-slate-800">
+                  {formatMoney(monthlySpent, language)}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
