@@ -223,45 +223,7 @@ type CategoryBreakdownItem = {
   percent: number;
   colorClass: string;
 };
-const normalizeCategoryKey = (value: string | null | undefined): string => {
-  if (!value) return "other";
 
-  const normalized = value.trim().toLowerCase();
-
-  const mapping: Record<string, string> = {
-    food: "food",
-    jedzenie: "food",
-
-    transport: "transport",
-
-    entertainment: "entertainment",
-    rozrywka: "entertainment",
-
-    shopping: "shopping",
-    zakupy: "shopping",
-
-    utilities: "utilities",
-    rachunki: "utilities",
-
-    other: "other",
-    inne: "other",
-  };
-
-  return mapping[normalized] || "other";
-};
-
-const getCategoryLabel = (categoryKey: string, t: any): string => {
-  const labels: Record<string, string> = {
-    food: t.food || "Food",
-    transport: t.transport || "Transport",
-    entertainment: t.entertainment || "Entertainment",
-    shopping: t.shopping || "Shopping",
-    utilities: t.utilities || "Utilities",
-    other: "Other",
-  };
-
-  return labels[categoryKey] || labels.other;
-};
 export default function BudgetTracker({
   userId,
   language,
@@ -438,26 +400,15 @@ export default function BudgetTracker({
     const totals = new Map<string, number>();
 
     data.forEach((item: { amount: string | number; category: string | null }) => {
-      const categoryKey = normalizeCategoryKey(item.category);
+      const category = item.category?.trim() || t.uncategorized;
       const amount = Number(item.amount || 0);
-    totals.set(categoryKey, (totals.get(categoryKey) || 0) + amount);
+      totals.set(category, (totals.get(category) || 0) + amount);
     });
-const sorted: CategoryBreakdownItem[] = Array.from(totals.entries())
-  .map(([categoryKey, total], index) => ({
-    category: getCategoryLabel(categoryKey, t),
-    total,
-    percent: totalSpent > 0 ? Math.round((total / totalSpent) * 100) : 0,
-    colorClass: categoryColors[index % categoryColors.length],
-  }))
-  .sort((a, b) => b.total - a.total);
+
+    const totalSpent = Array.from(totals.values()).reduce((sum, value) => sum + value, 0);
 
     const sorted = Array.from(totals.entries())
-.map(([categoryKey, total], index) => ({
-  category: getCategoryLabel(categoryKey, t),
-  total,
-  percent: totalSpent > 0 ? Math.round((total / totalSpent) * 100) : 0,
-  colorClass: categoryColors[index % categoryColors.length],
-}))
+      .map(([category, total], index) => ({
         category,
         total,
         percent: totalSpent > 0 ? Math.round((total / totalSpent) * 100) : 0,
