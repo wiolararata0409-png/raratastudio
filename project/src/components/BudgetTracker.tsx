@@ -291,7 +291,31 @@ const normalizeCategoryKey = (value: string | null | undefined): string => {
 
   return mapping[normalized] || "other";
 };
+const getCategoryIcon = (category: string) => {
+ const c = (category || "").toLowerCase();
 
+  if (c.includes("food") || c.includes("jedzenie") || c.includes("nourriture") || c.includes("comida") || c.includes("essen")) {
+    return "🍔";
+  }
+
+  if (c.includes("transport") || c.includes("transporte")) {
+    return "🚗";
+  }
+
+  if (c.includes("shop") || c.includes("zakupy") || c.includes("achats") || c.includes("compras") || c.includes("einkaufen")) {
+    return "🛍️";
+  }
+
+  if (c.includes("bill") || c.includes("rachunki") || c.includes("factures") || c.includes("servicios") || c.includes("rechnungen") || c.includes("utilities")) {
+    return "🧾";
+  }
+
+  if (c.includes("entertain") || c.includes("rozrywka") || c.includes("divertissement") || c.includes("entretenimiento") || c.includes("unterhaltung")) {
+    return "🎮";
+  }
+
+  return "📦";
+};
 const getCategoryLabel = (
   categoryKey: string,
   t: Record<string, string>
