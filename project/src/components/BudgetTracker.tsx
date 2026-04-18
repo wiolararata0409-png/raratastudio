@@ -70,6 +70,11 @@ const translations: Record<string, Record<string, string>> = {
     used: "used",
     left: "left",
     uncategorized: "Other",
+    food: "Food",
+    transport: "Transport",
+    entertainment: "Entertainment",
+    shopping: "Shopping",
+    utilities: "Utilities",
   },
   pl: {
     dailyBudget: "Dzienny Budżet",
@@ -102,6 +107,11 @@ const translations: Record<string, Record<string, string>> = {
     used: "wykorzystano",
     left: "pozostało",
     uncategorized: "Inne",
+    food: "Jedzenie",
+    transport: "Transport",
+    entertainment: "Rozrywka",
+    shopping: "Zakupy",
+    utilities: "Rachunki",
   },
   es: {
     dailyBudget: "Presupuesto Diario",
@@ -134,6 +144,11 @@ const translations: Record<string, Record<string, string>> = {
     used: "usado",
     left: "restante",
     uncategorized: "Otros",
+    food: "Comida",
+    transport: "Transporte",
+    entertainment: "Entretenimiento",
+    shopping: "Compras",
+    utilities: "Servicios",
   },
   fr: {
     dailyBudget: "Budget Quotidien",
@@ -167,6 +182,11 @@ const translations: Record<string, Record<string, string>> = {
     used: "utilisé",
     left: "restant",
     uncategorized: "Autres",
+    food: "Nourriture",
+    transport: "Transport",
+    entertainment: "Divertissement",
+    shopping: "Achats",
+    utilities: "Factures",
   },
   de: {
     dailyBudget: "Tagesbudget",
@@ -200,6 +220,11 @@ const translations: Record<string, Record<string, string>> = {
     used: "verwendet",
     left: "übrig",
     uncategorized: "Andere",
+    food: "Essen",
+    transport: "Transport",
+    entertainment: "Unterhaltung",
+    shopping: "Einkaufen",
+    utilities: "Rechnungen",
   },
 };
 
@@ -223,31 +248,66 @@ type CategoryBreakdownItem = {
   percent: number;
   colorClass: string;
 };
-const totals = new Map<string, number>();
 
-data.forEach((item: { amount: string | number; category: string | null }) => {
-  const categoryKey = normalizeCategoryKey(item.category);
-  const amount = Number(item.amount || 0);
-  totals.set(categoryKey, (totals.get(categoryKey) || 0) + amount);
-});
+const normalizeCategoryKey = (value: string | null | undefined): string => {
+  if (!value) return "other";
 
-const totalSpent = Array.from(totals.values()).reduce(
-  (sum, value) => sum + value,
-  0
-);
+  const normalized = value.trim().toLowerCase();
 
-const sorted = Array.from(totals.entries())
-  .map(([categoryKey, total], index) => {
-    return {
-      category: getCategoryLabel(categoryKey, t),
-      total,
-      percent: totalSpent > 0 ? Math.round((total / totalSpent) * 100) : 0,
-      colorClass: categoryColors[index % categoryColors.length],
-    };
-  })
-  .sort((a, b) => b.total - a.total);
+  const mapping: Record<string, string> = {
+    food: "food",
+    jedzenie: "food",
+    comida: "food",
+    nourriture: "food",
+    essen: "food",
 
-setMonthlyBreakdown(sorted);
+    transport: "transport",
+    transporte: "transport",
+
+    entertainment: "entertainment",
+    rozrywka: "entertainment",
+    entretenimiento: "entertainment",
+    divertissement: "entertainment",
+    unterhaltung: "entertainment",
+
+    shopping: "shopping",
+    zakupy: "shopping",
+    compras: "shopping",
+    achats: "shopping",
+    einkaufen: "shopping",
+
+    utilities: "utilities",
+    rachunki: "utilities",
+    servicios: "utilities",
+    factures: "utilities",
+    rechnungen: "utilities",
+
+    other: "other",
+    inne: "other",
+    otros: "other",
+    autres: "other",
+    andere: "other",
+  };
+
+  return mapping[normalized] || "other";
+};
+
+const getCategoryLabel = (
+  categoryKey: string,
+  t: Record<string, string>
+): string => {
+  const labels: Record<string, string> = {
+    food: t.food || "Food",
+    transport: t.transport || "Transport",
+    entertainment: t.entertainment || "Entertainment",
+    shopping: t.shopping || "Shopping",
+    utilities: t.utilities || "Utilities",
+    other: t.uncategorized || "Other",
+  };
+
+  return labels[categoryKey] || labels.other;
+};
+
 export default function BudgetTracker({
   userId,
   language,
@@ -272,7 +332,9 @@ export default function BudgetTracker({
 
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
-  const [monthlyBreakdown, setMonthlyBreakdown] = useState<CategoryBreakdownItem[]>([]);
+  const [monthlyBreakdown, setMonthlyBreakdown] = useState<
+    CategoryBreakdownItem[]
+  >([]);
   const [breakdownLoading, setBreakdownLoading] = useState(false);
 
   const t = useMemo(() => translations[language] || translations.en, [language]);
@@ -423,29 +485,28 @@ export default function BudgetTracker({
 
     const totals = new Map<string, number>();
 
-  data.forEach((item: { amount: string | number; category: string | null }) => {
-    const categoryKey = normalizeCategoryKey(item.category);
-    const amount = Number(item.amount || 0);
-    totals.set(categoryKey, (totals.get(categoryKey) || 0) + amount);
-  });
+    data.forEach((item: { amount: string | number; category: string | null }) => {
+      const categoryKey = normalizeCategoryKey(item.category);
+      const amount = Number(item.amount || 0);
+      totals.set(categoryKey, (totals.get(categoryKey) || 0) + amount);
+    });
 
-  const totalSpent = Array.from(totals.values()).reduce(
-    (sum, value) => sum + value,
-    0
-  );
+    const totalSpent = Array.from(totals.values()).reduce(
+      (sum, value) => sum + value,
+      0
+    );
 
-  const sorted = Array.from(totals.entries())
-    .map(([categoryKey, total], index) => {
-      return {
-        category: getCategoryLabel(categoryKey, t),
-        total,
-        percent:
-          totalSpent > 0 ? Math.round((total / totalSpent) * 100) : 0,
-        colorClass: categoryColors[index % categoryColors.length],
-      };
-    })
-    .sort((a, b) => b.total - a.total);
-    
+    const sorted = Array.from(totals.entries())
+      .map(([categoryKey, total], index) => {
+        return {
+          category: getCategoryLabel(categoryKey, t),
+          total,
+          percent:
+            totalSpent > 0 ? Math.round((total / totalSpent) * 100) : 0,
+          colorClass: categoryColors[index % categoryColors.length],
+        };
+      })
+      .sort((a, b) => b.total - a.total);
 
     setMonthlyBreakdown(sorted);
     setBreakdownLoading(false);
@@ -565,7 +626,8 @@ export default function BudgetTracker({
   }, [userId, isPremium, language]);
 
   const dailyRemaining = Math.max(0, budget - spent);
-  const dailyPercentage = budget > 0 ? Math.min(100, (spent / budget) * 100) : 0;
+  const dailyPercentage =
+    budget > 0 ? Math.min(100, (spent / budget) * 100) : 0;
   const dailyExceeded = spent > budget;
 
   const monthlyRemaining = Math.max(0, monthlyBudget - monthlySpent);
@@ -693,7 +755,10 @@ export default function BudgetTracker({
 
         {currentExceeded && (
           <div className="mt-6 flex items-start gap-3 bg-red-50 border-2 border-red-300 rounded-xl p-4">
-            <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={24} />
+            <AlertCircle
+              className="text-red-600 flex-shrink-0 mt-0.5"
+              size={24}
+            />
             <div>
               <p className="font-bold text-red-700 text-lg">{t.warning}</p>
               <p className="text-red-600 text-sm">{t.youveExceeded}</p>
@@ -771,8 +836,12 @@ export default function BudgetTracker({
                 <div key={item.category}>
                   <div className="flex items-center justify-between mb-1 text-sm">
                     <div className="flex items-center gap-2">
-                      <span className={`inline-block w-3 h-3 rounded-full ${item.colorClass}`} />
-                      <span className="font-medium text-slate-700">{item.category}</span>
+                      <span
+                        className={`inline-block w-3 h-3 rounded-full ${item.colorClass}`}
+                      />
+                      <span className="font-medium text-slate-700">
+                        {item.category}
+                      </span>
                       <span className="text-slate-400">{item.percent}%</span>
                     </div>
                     <span className="font-semibold text-slate-800">
@@ -831,7 +900,10 @@ export default function BudgetTracker({
                         <div
                           className="w-full bg-blue-600 transition-all duration-500"
                           style={{ height: `${h}%` }}
-                          title={`${d.date}: ${formatMoney(d.total, language)}`}
+                          title={`${d.date}: ${formatMoney(
+                            d.total,
+                            language
+                          )}`}
                         />
                       </div>
                       <div className="text-[10px] text-slate-500">
@@ -869,7 +941,9 @@ export default function BudgetTracker({
             >
               <p className="font-semibold">{t.premiumFeature}</p>
               <p className="text-sm opacity-70">{t.unlockStats}</p>
-              <p className="text-xs mt-2 text-blue-600 underline">{t.upgrade}</p>
+              <p className="text-xs mt-2 text-blue-600 underline">
+                {t.upgrade}
+              </p>
             </div>
 
             {showPremium && (
