@@ -848,7 +848,7 @@ export default function BudgetTracker({
         </div>
       )}
 
-      {monthlyBreakdown.length > 0 && (
+    {budgetView === "monthly" && monthlyBreakdown.length > 0 && (
         <div className="bg-white rounded-3xl shadow-lg p-6">
           <h3 className="text-lg font-bold mb-4">{t.monthlyBreakdown}</h3>
 
