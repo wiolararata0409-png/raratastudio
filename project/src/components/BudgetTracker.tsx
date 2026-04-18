@@ -834,27 +834,32 @@ export default function BudgetTracker({
             <div className="space-y-4">
               {monthlyBreakdown.map((item) => (
                 <div key={item.category}>
-                  <div className="flex items-center justify-between mb-1 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`inline-block w-3 h-3 rounded-full ${item.colorClass}`}
-                      />
-                      <span className="font-medium text-slate-700">
-                        {item.category}
-                      </span>
-                      <span className="text-slate-400">{item.percent}%</span>
-                    </div>
-                    <span className="font-semibold text-slate-800">
-                      {formatMoney(item.total, language)}
-                    </span>
-                  </div>
+            <div className="flex items-center justify-between mb-1 text-sm">
+  <div className="flex items-center gap-2">
+    <span
+      className={`inline-block w-3 h-3 rounded-full ${item.colorClass}`}
+    />
 
-                  <div className="w-full bg-slate-100 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full ${item.colorClass}`}
-                      style={{ width: `${item.percent}%` }}
-                    />
-                  </div>
+    <span className="font-medium text-slate-700">
+      {getCategoryIcon(item.category)} {item.category}
+    </span>
+
+    <span className="text-slate-400">
+      {item.percent}%
+    </span>
+  </div>
+
+  <span className="font-semibold text-slate-800">
+    {formatMoney(item.total, language)}
+  </span>
+</div>
+
+<div className="w-full bg-slate-100 rounded-full h-2">
+  <div
+    className={`h-2 rounded-full ${item.colorClass}`}
+    style={{ width: `${item.percent}%` }}
+  />
+</div>
                 </div>
               ))}
 
