@@ -735,47 +735,47 @@ export default function BudgetTracker({
     {t.monthlyBudget}
   </button>
 </div>
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div className="text-center">
+              <p className="text-slate-500 text-sm font-semibold">
+                {t.limit}
+              </p>
+              <p className="text-3xl sm:text-4xl font-bold text-slate-800">
+                {formatMoney(currentLimit, language)}
+              </p>
+            </div>
 
-       <div className="space-y-4">
-  <div className="text-center">
-    <p className="text-slate-500 text-sm font-semibold">
-      {t.limit}
-    </p>
-    <p className="text-3xl sm:text-4xl font-bold text-slate-800">
-      {formatMoney(currentLimit, language)}
-    </p>
-  </div>
+            <div className="text-center">
+              <p
+                className={`text-sm font-semibold ${
+                  currentExceeded ? "text-red-600" : "text-slate-500"
+                }`}
+              >
+                {t.spent}
+              </p>
+              <p
+                className={`text-3xl sm:text-4xl font-bold ${
+                  currentExceeded ? "text-red-600" : "text-slate-800"
+                }`}
+              >
+                {formatMoney(currentSpent, language)}
+              </p>
+            </div>
 
-  <div className="text-center">
-    <p
-      className={`text-sm font-semibold ${
-        currentExceeded ? "text-red-600" : "text-slate-500"
-      }`}
-    >
-      {t.spent}
-    </p>
-    <p
-      className={`text-3xl sm:text-4xl font-bold ${
-        currentExceeded ? "text-red-600" : "text-slate-800"
-      }`}
-    >
-      {formatMoney(currentSpent, language)}
-    </p>
-  </div>
-
-  <div className="text-center">
-    <p className="text-slate-500 text-sm font-semibold">
-      {t.remaining}
-    </p>
-    <p
-      className={`text-3xl sm:text-4xl font-bold ${
-        currentExceeded ? "text-red-600" : "text-green-600"
-      }`}
-    >
-      {formatMoney(currentRemaining, language)}
-    </p>
-  </div>
-</div>
+            <div className="text-center">
+              <p className="text-slate-500 text-sm font-semibold">
+                {t.remaining}
+              </p>
+              <p
+                className={`text-3xl sm:text-4xl font-bold ${
+                  currentExceeded ? "text-red-600" : "text-green-600"
+                }`}
+              >
+                {formatMoney(currentRemaining, language)}
+              </p>
+            </div>
+          </div>
 
           <div>
             <div className="flex items-center justify-between mb-2">
