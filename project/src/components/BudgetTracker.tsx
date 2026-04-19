@@ -990,6 +990,9 @@ export default function BudgetTracker({
   <span>👑</span>
   {t.premiumFeature}
 </p>
+              <p className="text-xs text-blue-600 font-semibold mt-1">
+   Most popular ⭐
+</p>
               <p className="text-sm opacity-70">{t.unlockStats}</p>
               <p className="text-xs mt-2 text-blue-600 underline">
                 {t.upgrade}
