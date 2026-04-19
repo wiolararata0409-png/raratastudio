@@ -291,31 +291,7 @@ const normalizeCategoryKey = (value: string | null | undefined): string => {
 
   return mapping[normalized] || "other";
 };
-const getCategoryIcon = (category: string) => {
- const c = (category || "").toLowerCase();
 
-  if (c.includes("food") || c.includes("jedzenie") || c.includes("nourriture") || c.includes("comida") || c.includes("essen")) {
-    return "🍔";
-  }
-
-  if (c.includes("transport") || c.includes("transporte")) {
-    return "🚗";
-  }
-
-  if (c.includes("shop") || c.includes("zakupy") || c.includes("achats") || c.includes("compras") || c.includes("einkaufen")) {
-    return "🛍️";
-  }
-
-  if (c.includes("bill") || c.includes("rachunki") || c.includes("factures") || c.includes("servicios") || c.includes("rechnungen") || c.includes("utilities")) {
-    return "🧾";
-  }
-
-  if (c.includes("entertain") || c.includes("rozrywka") || c.includes("divertissement") || c.includes("entretenimiento") || c.includes("unterhaltung")) {
-    return "🎮";
-  }
-
-  return "📦";
-};
 const getCategoryLabel = (
   categoryKey: string,
   t: Record<string, string>
@@ -848,7 +824,7 @@ export default function BudgetTracker({
         </div>
       )}
 
-    {budgetView === "monthly" && monthlyBreakdown.length > 0 && (
+      {monthlyBreakdown.length > 0 && (
         <div className="bg-white rounded-3xl shadow-lg p-6">
           <h3 className="text-lg font-bold mb-4">{t.monthlyBreakdown}</h3>
 
@@ -858,32 +834,27 @@ export default function BudgetTracker({
             <div className="space-y-4">
               {monthlyBreakdown.map((item) => (
                 <div key={item.category}>
-            <div className="flex items-center justify-between mb-1 text-sm">
-  <div className="flex items-center gap-2">
-    <span
-      className={`inline-block w-3 h-3 rounded-full ${item.colorClass}`}
-    />
+                  <div className="flex items-center justify-between mb-1 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`inline-block w-3 h-3 rounded-full ${item.colorClass}`}
+                      />
+                      <span className="font-medium text-slate-700">
+                        {item.category}
+                      </span>
+                      <span className="text-slate-400">{item.percent}%</span>
+                    </div>
+                    <span className="font-semibold text-slate-800">
+                      {formatMoney(item.total, language)}
+                    </span>
+                  </div>
 
-    <span className="font-medium text-slate-700">
-      {getCategoryIcon(item.category)} {item.category}
-    </span>
-
-    <span className="text-slate-400">
-      {item.percent}%
-    </span>
-  </div>
-
-  <span className="font-semibold text-slate-800">
-    {formatMoney(item.total, language)}
-  </span>
-</div>
-
-<div className="w-full bg-slate-100 rounded-full h-2">
-  <div
-    className={`h-2 rounded-full ${item.colorClass}`}
-    style={{ width: `${item.percent}%` }}
-  />
-</div>
+                  <div className="w-full bg-slate-100 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full ${item.colorClass}`}
+                      style={{ width: `${item.percent}%` }}
+                    />
+                  </div>
                 </div>
               ))}
 
