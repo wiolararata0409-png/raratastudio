@@ -736,47 +736,46 @@ export default function BudgetTracker({
   </button>
 </div>
 
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="text-center sm:text-left">
-              <p className="text-slate-600 text-sm font-semibold mb-1">
-                {t.limit}
-              </p>
-              <p className="text-2xl sm:text-3xl font-bold text-slate-800 break-words tracking-tight">
-                {formatMoney(currentLimit, language)}
-              </p>
-            </div>
+       <div className="space-y-4">
+  <div className="text-center">
+    <p className="text-slate-500 text-sm font-semibold">
+      {t.limit}
+    </p>
+    <p className="text-3xl sm:text-4xl font-bold text-slate-800">
+      {formatMoney(currentLimit, language)}
+    </p>
+  </div>
 
-            <div className="text-center sm:text-left">
-              <p
-                className={`text-sm font-semibold mb-1 ${
-                  currentExceeded ? "text-red-600" : "text-slate-600"
-                }`}
-              >
-                {t.spent}
-              </p>
-              <p
-                className={`text-2xl sm:text-3xl font-bold break-words tracking-tight ${
-                  currentExceeded ? "text-red-600" : "text-slate-800"
-                }`}
-              >
-                {formatMoney(currentSpent, language)}
-              </p>
-            </div>
+  <div className="text-center">
+    <p
+      className={`text-sm font-semibold ${
+        currentExceeded ? "text-red-600" : "text-slate-500"
+      }`}
+    >
+      {t.spent}
+    </p>
+    <p
+      className={`text-3xl sm:text-4xl font-bold ${
+        currentExceeded ? "text-red-600" : "text-slate-800"
+      }`}
+    >
+      {formatMoney(currentSpent, language)}
+    </p>
+  </div>
 
-            <div className="text-center sm:text-left">
-              <p className="text-slate-600 text-sm font-semibold mb-1">
-                {t.remaining}
-              </p>
-              <p
-                className={`text-2xl sm:text-3xl font-bold break-words tracking-tight ${
-                  currentExceeded ? "text-red-600" : "text-green-600"
-                }`}
-              >
-                {formatMoney(currentRemaining, language)}
-              </p>
-            </div>
-          </div>
+  <div className="text-center">
+    <p className="text-slate-500 text-sm font-semibold">
+      {t.remaining}
+    </p>
+    <p
+      className={`text-3xl sm:text-4xl font-bold ${
+        currentExceeded ? "text-red-600" : "text-green-600"
+      }`}
+    >
+      {formatMoney(currentRemaining, language)}
+    </p>
+  </div>
+</div>
 
           <div>
             <div className="flex items-center justify-between mb-2">
