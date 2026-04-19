@@ -984,9 +984,12 @@ export default function BudgetTracker({
           <>
             <div
               onClick={() => setShowPremium(true)}
-              className="p-4 rounded-xl border border-dashed text-center cursor-pointer hover:bg-slate-50"
+            className="p-4 rounded-xl border border-dashed text-center cursor-pointer hover:bg-slate-50 hover:scale-[1.02] transition-all duration-200"
             >
-              <p className="font-semibold">{t.premiumFeature}</p>
+              <p className="font-semibold flex items-center justify-center gap-2">
+  <span>👑</span>
+  {t.premiumFeature}
+</p>
               <p className="text-sm opacity-70">{t.unlockStats}</p>
               <p className="text-xs mt-2 text-blue-600 underline">
                 {t.upgrade}
