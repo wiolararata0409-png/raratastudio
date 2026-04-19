@@ -713,29 +713,28 @@ export default function BudgetTracker({
             <Settings className="text-slate-600" size={24} />
           </button>
         </div>
-
-        <div className="mb-6 inline-flex bg-slate-100 rounded-xl p-1">
-          <button
-            onClick={() => setBudgetView("daily")}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-              budgetView === "daily"
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-slate-600"
-            }`}
-          >
-            {t.dailyBudget}
-          </button>
-          <button
-            onClick={() => setBudgetView("monthly")}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-              budgetView === "monthly"
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-slate-600"
-            }`}
-          >
-            {t.monthlyBudget}
-          </button>
-        </div>
+<div className="mb-6 flex w-full bg-slate-100 rounded-xl p-1">
+  <button
+    onClick={() => setBudgetView("daily")}
+    className={`flex-1 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition ${
+      budgetView === "daily"
+        ? "bg-white text-blue-600 shadow-sm"
+        : "text-slate-600"
+    }`}
+  >
+    {t.dailyBudget}
+  </button>
+  <button
+    onClick={() => setBudgetView("monthly")}
+    className={`flex-1 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition ${
+      budgetView === "monthly"
+        ? "bg-white text-blue-600 shadow-sm"
+        : "text-slate-600"
+    }`}
+  >
+    {t.monthlyBudget}
+  </button>
+</div>
 
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
