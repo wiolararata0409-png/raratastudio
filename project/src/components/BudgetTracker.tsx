@@ -308,6 +308,57 @@ const getCategoryLabel = (
   return labels[categoryKey] || labels.other;
 };
 
+const getCategoryIcon = (category: string | null | undefined) => {
+  const c = (category || "").toLowerCase();
+
+  if (
+    c.includes("food") ||
+    c.includes("jedzenie") ||
+    c.includes("nourriture") ||
+    c.includes("comida") ||
+    c.includes("essen")
+  ) {
+    return "🍔";
+  }
+
+  if (c.includes("transport") || c.includes("transporte")) {
+    return "🚗";
+  }
+
+  if (
+    c.includes("shop") ||
+    c.includes("zakupy") ||
+    c.includes("achats") ||
+    c.includes("compras") ||
+    c.includes("einkaufen")
+  ) {
+    return "🛍️";
+  }
+
+  if (
+    c.includes("bill") ||
+    c.includes("rachunki") ||
+    c.includes("factures") ||
+    c.includes("servicios") ||
+    c.includes("rechnungen") ||
+    c.includes("utilities")
+  ) {
+    return "🧾";
+  }
+
+  if (
+    c.includes("entertain") ||
+    c.includes("rozrywka") ||
+    c.includes("divertissement") ||
+    c.includes("entretenimiento") ||
+    c.includes("unterhaltung")
+  ) {
+    return "🎮";
+  }
+
+  return "📦";
+};
+
 export default function BudgetTracker({
   userId,
   language,
@@ -687,17 +738,17 @@ export default function BudgetTracker({
         </div>
 
         <div className="space-y-6">
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="text-center sm:text-left">
               <p className="text-slate-600 text-sm font-semibold mb-1">
                 {t.limit}
               </p>
-              <p className="text-3xl font-bold text-slate-800">
+              <p className="text-2xl sm:text-3xl font-bold text-slate-800 break-words tracking-tight">
                 {formatMoney(currentLimit, language)}
               </p>
             </div>
 
-            <div className="text-center">
+            <div className="text-center sm:text-left">
               <p
                 className={`text-sm font-semibold mb-1 ${
                   currentExceeded ? "text-red-600" : "text-slate-600"
@@ -706,7 +757,7 @@ export default function BudgetTracker({
                 {t.spent}
               </p>
               <p
-                className={`text-3xl font-bold ${
+                className={`text-2xl sm:text-3xl font-bold break-words tracking-tight ${
                   currentExceeded ? "text-red-600" : "text-slate-800"
                 }`}
               >
@@ -714,12 +765,12 @@ export default function BudgetTracker({
               </p>
             </div>
 
-            <div className="text-center">
+            <div className="text-center sm:text-left">
               <p className="text-slate-600 text-sm font-semibold mb-1">
                 {t.remaining}
               </p>
               <p
-                className={`text-3xl font-bold ${
+                className={`text-2xl sm:text-3xl font-bold break-words tracking-tight ${
                   currentExceeded ? "text-red-600" : "text-green-600"
                 }`}
               >
@@ -824,7 +875,7 @@ export default function BudgetTracker({
         </div>
       )}
 
-      {monthlyBreakdown.length > 0 && (
+      {budgetView === "monthly" && monthlyBreakdown.length > 0 && (
         <div className="bg-white rounded-3xl shadow-lg p-6">
           <h3 className="text-lg font-bold mb-4">{t.monthlyBreakdown}</h3>
 
@@ -840,7 +891,7 @@ export default function BudgetTracker({
                         className={`inline-block w-3 h-3 rounded-full ${item.colorClass}`}
                       />
                       <span className="font-medium text-slate-700">
-                        {item.category}
+                        {getCategoryIcon(item.category)} {item.category}
                       </span>
                       <span className="text-slate-400">{item.percent}%</span>
                     </div>
