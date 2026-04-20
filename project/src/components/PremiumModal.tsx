@@ -231,7 +231,7 @@ export default function PremiumModal({
             {/* MONTHLY */}
             <div className="border-2 border-slate-200 rounded-2xl p-6">
               <h3 className="text-lg font-bold text-slate-800 mb-1">
-               Monthly plan - £2.99 per month
+              {t.monthlyPlan} - £2.99
               </h3>
 
               <button
@@ -250,10 +250,12 @@ export default function PremiumModal({
               </div>
 
               <h3 className="text-lg font-bold text-slate-800 mb-1">
-               Yearly plan - £26.99 per year
+              {t.yearlyPlan} - £26.99
               </h3>
               <p className="text-sm text-slate-600 mb-3">{t.saveUpTo}</p>
- 
+             <p className="text-xs text-green-500 font-semibold mt-1">
+             {t.saveMoney}
+             </p>
 
               <button
                 onClick={() => handleSubscribe("yearly")}
