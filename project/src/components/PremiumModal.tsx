@@ -253,6 +253,7 @@ export default function PremiumModal({
                Yearly plan - £26.99 per year
               </h3>
               <p className="text-sm text-slate-600 mb-3">{t.saveUpTo}</p>
+ 
 
               <button
                 onClick={() => handleSubscribe("yearly")}
