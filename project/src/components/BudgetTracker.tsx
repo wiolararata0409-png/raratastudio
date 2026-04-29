@@ -888,16 +888,19 @@ export default function BudgetTracker({
     <div className="relative h-64 mb-6">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
-          <Pie
-            data={monthlyBreakdown}
-            dataKey="amount"
-            nameKey="category"
-            cx="50%"
-            cy="50%"
-            innerRadius={65}
-            outerRadius={95}
-            paddingAngle={3}
-          >
+       <Pie
+  data={monthlyBreakdown.map((item) => ({
+    name: item.category,
+    value: Number(item.amount),
+  }))}
+  dataKey="value"
+  nameKey="name"
+  cx="50%"
+  cy="50%"
+  innerRadius={65}
+  outerRadius={95}
+  paddingAngle={3}
+>
             {monthlyBreakdown.map((item, index) => {
               const colors = [
                 "#8b5cf6",
@@ -925,9 +928,9 @@ export default function BudgetTracker({
 
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
         <span className="text-sm text-slate-400">{t.spent}</span>
-        <span className="text-2xl font-bold text-white">
+        <span className="text-2xl font-bold text-slate-900">
           {formatMoney(
-  monthlyBreakdown.reduce((sum, item) => sum + item.amount, 0),
+  monthlyBreakdown.reduce((sum, item) => sum + Number(item.amount), 0),
   language
 )}
         </span>
