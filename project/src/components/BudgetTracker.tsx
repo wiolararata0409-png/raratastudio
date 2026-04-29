@@ -891,14 +891,14 @@ export default function BudgetTracker({
        <Pie
  data={monthlyBreakdown.map((item) => ({
   name: item.category,
-  value:
-    typeof item.amount === "number"
-      ? item.amount
-      : parseFloat(
-          String(item.amount)
-            .replace(",", ".")
-            .replace(/[^0-9.-]/g, "")
-        ) || 0,
+ value:
+  typeof item.total === "number"
+    ? item.total
+    : parseFloat(
+        String(item.total)
+          .replace(",", ".")
+          .replace(/[^0-9.-]/g, "")
+      ) || 0,
 }))}
   dataKey="value"
   nameKey="name"
@@ -939,10 +939,10 @@ export default function BudgetTracker({
           {formatMoney(
  monthlyBreakdown.reduce((sum, item) => {
   const amount =
-    typeof item.amount === "number"
-      ? item.amount
+    typeof item.total === "number"
+      ? item.total
       : parseFloat(
-          String(item.amount)
+          String(item.total)
             .replace(",", ".")
             .replace(/[^0-9.-]/g, "")
         ) || 0;
