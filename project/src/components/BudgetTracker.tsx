@@ -970,6 +970,7 @@ export default function BudgetTracker({
                 </span>
               </div>
             </div>
+    </>
           )}
         </div>
       )}
