@@ -948,7 +948,7 @@ export default function BudgetTracker({
         ) || 0;
 
   return sum + amount;
-}, 0)
+}, 0),
   language
 )}
         </span>
