@@ -889,10 +889,17 @@ export default function BudgetTracker({
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
        <Pie
-  data={monthlyBreakdown.map((item) => ({
-    name: item.category,
-    value: Number(item.amount),
-  }))}
+ data={monthlyBreakdown.map((item) => ({
+  name: item.category,
+  value:
+    typeof item.amount === "number"
+      ? item.amount
+      : parseFloat(
+          String(item.amount)
+            .replace(",", ".")
+            .replace(/[^0-9.-]/g, "")
+        ) || 0,
+}))}
   dataKey="value"
   nameKey="name"
   cx="50%"
@@ -930,7 +937,18 @@ export default function BudgetTracker({
         <span className="text-sm text-slate-400">{t.spent}</span>
         <span className="text-2xl font-bold text-slate-900">
           {formatMoney(
-  monthlyBreakdown.reduce((sum, item) => sum + Number(item.amount), 0),
+ monthlyBreakdown.reduce((sum, item) => {
+  const amount =
+    typeof item.amount === "number"
+      ? item.amount
+      : parseFloat(
+          String(item.amount)
+            .replace(",", ".")
+            .replace(/[^0-9.-]/g, "")
+        ) || 0;
+
+  return sum + amount;
+}, 0)
   language
 )}
         </span>
