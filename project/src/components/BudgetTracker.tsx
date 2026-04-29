@@ -917,21 +917,19 @@ export default function BudgetTracker({
             })}
           </Pie>
 
-          <Tooltip
-            formatter={(value) =>
-              `${Number(value).toFixed(2)} ${currency}`
-            }
-          />
+        <Tooltip
+  formatter={(value) => formatMoney(Number(value), language)}
+/>
         </PieChart>
       </ResponsiveContainer>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
         <span className="text-sm text-slate-400">{t.spent}</span>
         <span className="text-2xl font-bold text-white">
-          {monthlyBreakdown
-            .reduce((sum, item) => sum + item.amount, 0)
-            .toFixed(2)}{" "}
-          {currency}
+          {formatMoney(
+  monthlyBreakdown.reduce((sum, item) => sum + item.amount, 0),
+  language
+)}
         </span>
       </div>
     </div>
