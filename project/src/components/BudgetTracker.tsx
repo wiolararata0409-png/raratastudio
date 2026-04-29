@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AlertCircle, Settings } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { supabase } from "../lib/supabaseClient";
 
 interface BudgetTrackerProps {
@@ -882,8 +883,60 @@ export default function BudgetTracker({
 
           {breakdownLoading ? (
             <p>{t.loading}</p>
-          ) : (
-            <div className="space-y-4">
+        ) : (
+  <>
+    <div className="relative h-64 mb-6">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={monthlyBreakdown}
+            dataKey="amount"
+            nameKey="category"
+            cx="50%"
+            cy="50%"
+            innerRadius={65}
+            outerRadius={95}
+            paddingAngle={3}
+          >
+            {monthlyBreakdown.map((item, index) => {
+              const colors = [
+                "#8b5cf6",
+                "#22c55e",
+                "#3b82f6",
+                "#f97316",
+                "#ef4444",
+                "#14b8a6",
+              ];
+
+              return (
+                <Cell
+                  key={item.category}
+                  fill={colors[index % colors.length]}
+                />
+              );
+            })}
+          </Pie>
+
+          <Tooltip
+            formatter={(value) =>
+              `${Number(value).toFixed(2)} ${currency}`
+            }
+          />
+        </PieChart>
+      </ResponsiveContainer>
+
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+        <span className="text-sm text-slate-400">{t.spent}</span>
+        <span className="text-2xl font-bold text-white">
+          {monthlyBreakdown
+            .reduce((sum, item) => sum + item.amount, 0)
+            .toFixed(2)}{" "}
+          {currency}
+        </span>
+      </div>
+    </div>
+
+    <div className="space-y-4">
               {monthlyBreakdown.map((item) => (
                 <div key={item.category}>
                   <div className="flex items-center justify-between mb-1 text-sm">
