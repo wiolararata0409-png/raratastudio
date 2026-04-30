@@ -910,13 +910,13 @@ export default function BudgetTracker({
 >
             {monthlyBreakdown.map((item, index) => {
               const colors = [
-                "#8b5cf6",
-                "#22c55e",
-                "#3b82f6",
-                "#f97316",
-                "#ef4444",
-                "#14b8a6",
-              ];
+  "#3b82f6", // Shopping - blue
+  "#8b5cf6", // Entertainment - purple
+  "#22c55e", // Food - green
+  "#f97316", // Transport - orange
+  "#ef4444", // extra - red
+  "#14b8a6", // extra - teal
+];
 
               return (
                 <Cell
