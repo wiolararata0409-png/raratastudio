@@ -909,19 +909,22 @@ export default function BudgetTracker({
   paddingAngle={3}
 >
             {monthlyBreakdown.map((item, index) => {
-              const colors = [
-  "#3b82f6", // Shopping - blue
-  "#8b5cf6", // Entertainment - purple
-  "#22c55e", // Food - green
-  "#f97316", // Transport - orange
-  "#ef4444", // extra - red
-  "#14b8a6", // extra - teal
-];
+const getChartColor = (colorClass: string) => {
+  if (colorClass.includes("orange")) return "#fb923c";
+  if (colorClass.includes("blue")) return "#60a5fa";
+  if (colorClass.includes("green")) return "#4ade80";
+  if (colorClass.includes("purple")) return "#a78bfa";
+  if (colorClass.includes("pink")) return "#f472b6";
+  if (colorClass.includes("yellow")) return "#facc15";
+  if (colorClass.includes("teal")) return "#2dd4bf";
+  if (colorClass.includes("indigo")) return "#818cf8";
+  return "#94a3b8";
+};
 
               return (
                 <Cell
                   key={item.category}
-                  fill={colors[index % colors.length]}
+                 fill={getChartColor(item.colorClass)}
                 />
               );
             })}
