@@ -134,16 +134,22 @@ if (!isPremium && expenses.length >= freeLimit)
       const today = new Date().toISOString().split('T')[0];
       const receiptUrl = await uploadReceiptImage();
 
-      await supabase.from('expenses').insert([
-        {
-          user_id: userId,
-          amount: parseFloat(amount),
-          category,
-          description,
-          date: today,
-          receipt_image_url: receiptUrl
-        }
-      ]);
+     const { error } = await supabase.from('expenses').insert([
+  {
+    user_id: userId,
+    amount: parseFloat(amount),
+    category,
+    description,
+    date: today,
+    receipt_image_url: receiptUrl
+  }
+]);
+
+if (error) {
+  console.error('Expense insert error:', error);
+  alert('Expense could not be saved. Please try again.');
+  return;
+}
 
       setAmount('');
       setDescription('');
