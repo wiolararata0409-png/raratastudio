@@ -1022,7 +1022,64 @@ const getChartColor = (colorClass: string) => {
         </span>
       </div>
     </div>
+{monthlyBreakdown.length > 0 && (
+  <div className="mb-5 rounded-2xl bg-slate-50 border border-slate-200 p-4 text-sm text-slate-700">
+    {(() => {
+      const topCategory = monthlyBreakdown.reduce((max, item) =>
+        Number(item.total) > Number(max.total) ? item : max
+      );
 
+   const categoryLabel = (
+  <span className="font-semibold text-slate-900">
+    {getCategoryIcon(topCategory.category)} {topCategory.category}
+  </span>
+);
+
+if (language === "pl") {
+  return (
+    <p>
+      Najwięcej wydajesz na {categoryLabel} — {topCategory.percent}% wszystkich
+      wydatków w tym miesiącu.
+    </p>
+  );
+}
+
+if (language === "es") {
+  return (
+    <p>
+      Tu categoría con más gasto este mes es {categoryLabel} —{" "}
+      {topCategory.percent}% de tus gastos.
+    </p>
+  );
+}
+
+if (language === "fr") {
+  return (
+    <p>
+      Ta plus grande catégorie de dépenses ce mois-ci est {categoryLabel} —{" "}
+      {topCategory.percent}% de tes dépenses.
+    </p>
+  );
+}
+
+if (language === "de") {
+  return (
+    <p>
+      Deine größte Ausgabenkategorie in diesem Monat ist {categoryLabel} —{" "}
+      {topCategory.percent}% deiner Ausgaben.
+    </p>
+  );
+}
+
+return (
+  <p>
+    Your biggest spending category this month is {categoryLabel} —{" "}
+    {topCategory.percent}% of your spending.
+  </p>
+);
+    })()}
+  </div>
+)}
     <div className="space-y-4">
               {monthlyBreakdown.map((item) => (
                 <div key={item.category}>
