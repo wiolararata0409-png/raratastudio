@@ -391,9 +391,66 @@ export default function BudgetTracker({
     CategoryBreakdownItem[]
   >([]);
   const [breakdownLoading, setBreakdownLoading] = useState(false);
-
+const [isDemoMode, setIsDemoMode] = useState(false);
   const t = useMemo(() => translations[language] || translations.en, [language]);
+const loadDemoData = () => {
+  setIsDemoMode(true);
+  setBudgetView("monthly");
 
+  setHistory([
+    {
+      id: "demo-1",
+      date: new Date().toISOString().split("T")[0],
+      category: "Food",
+      amount: 42.5,
+    },
+    {
+      id: "demo-2",
+      date: new Date().toISOString().split("T")[0],
+      category: "Shopping",
+      amount: 38.9,
+    },
+    {
+      id: "demo-3",
+      date: new Date().toISOString().split("T")[0],
+      category: "Transport",
+      amount: 12,
+    },
+    {
+      id: "demo-4",
+      date: new Date().toISOString().split("T")[0],
+      category: "Entertainment",
+      amount: 25,
+    },
+  ]);
+
+  setMonthlyBreakdown([
+    {
+      category: "Food",
+      total: 42.5,
+      percent: 36,
+      colorClass: "bg-orange-400",
+    },
+    {
+      category: "Shopping",
+      total: 38.9,
+      percent: 33,
+      colorClass: "bg-blue-400",
+    },
+    {
+      category: "Entertainment",
+      total: 25,
+      percent: 21,
+      colorClass: "bg-purple-400",
+    },
+    {
+      category: "Transport",
+      total: 12,
+      percent: 10,
+      colorClass: "bg-green-400",
+    },
+  ]);
+};
   const exportCSV = () => {
     const csvContent =
       "Date,Category,Amount\n" +
@@ -739,6 +796,14 @@ export default function BudgetTracker({
     {t.monthlyBudget}
   </button>
 </div>
+        {!isDemoMode && (
+  <button
+    onClick={loadDemoData}
+    className="w-full mt-4 rounded-2xl border border-blue-300 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-700 hover:bg-blue-100 transition"
+  >
+    Try demo data
+  </button>
+)}
         <div className="space-y-6">
           <div className="space-y-4">
             <div className="text-center">
