@@ -387,6 +387,7 @@ export default function BudgetTracker({
 
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [showAllHistory, setShowAllHistory] = useState(false);
   const [monthlyBreakdown, setMonthlyBreakdown] = useState<
     CategoryBreakdownItem[]
   >([]);
@@ -1171,7 +1172,7 @@ return (
               <p>{t.noExpenses}</p>
             ) : (
               <div className="space-y-2">
-                {history.map((item) => (
+               {(showAllHistory ? history : history.slice(0, 10)).map((item) => (
                   <div
                     key={item.id}
                     className="flex justify-between text-sm border-b pb-2"
@@ -1182,6 +1183,20 @@ return (
                 ))}
               </div>
             )}
+            {history.length > 10 && (
+  <button
+    onClick={() => setShowAllHistory(!showAllHistory)}
+    className="w-full mt-4 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+  >
+    {showAllHistory
+      ? language === "pl"
+        ? "Pokaż mniej"
+        : "Show less"
+      : language === "pl"
+        ? "Pokaż więcej"
+        : "Show more"}
+  </button>
+)}
           </div>
         ) : (
           <>
